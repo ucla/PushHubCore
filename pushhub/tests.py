@@ -33,3 +33,10 @@ class ViewTests(unittest.TestCase):
         request = Request.blank('/publish', headers, POST={})
         info = publish(request)
         self.assertEqual(info.status_code, 204)
+
+    def test_publish_wrong_method(self):
+        headers = [("Content-Type", "application/x-www-form-urlencoded")]
+        request = Request.blank('', headers)
+        info = publish(request)
+        self.assertEqual(info.status_code, 405)
+        self.assertEqual(info.headers['Allow'], 'POST')
