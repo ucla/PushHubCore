@@ -1,3 +1,6 @@
+"""
+Various utility functions.
+"""
 from functools import wraps
 
 from pyramid.httpexceptions import exception_response
