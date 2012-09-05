@@ -1,7 +1,8 @@
 from persistent.mapping import PersistentMapping
 
 from .subscriber import Subscribers
-from .topics import Topics
+from .topic import Topics
+from .hub import Hub
 
 
 class Root(PersistentMapping):

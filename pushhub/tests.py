@@ -6,7 +6,7 @@ from pyramid.testing import DummyRequest
 from pyramid.request import Request
 
 from .views import publish
-from .topics import Topic
+from .models.topic import Topic
 
 
 class ViewTests(unittest.TestCase):
