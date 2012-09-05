@@ -5,7 +5,6 @@ The hub itself does not have state, but does hold references to
 subscribers and topics.
 """
 
-from zope.component import provideUtility
 from zope.interface import Interface, implements
 
 
@@ -20,6 +19,7 @@ class IHub(Interface):
 class Hub(Folder):
     implements(IHub)
     __name__ = __parent__ = None
+    title = "Hub"
 
     def __init__(self):
         self.topics = None
