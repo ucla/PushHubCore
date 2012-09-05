@@ -2,6 +2,7 @@ from pyramid.config import Configurator
 from pyramid_zodbconn import get_connection
 
 from .views import publish
+from .models import appmaker
 
 
 def root_factory(request):
