@@ -13,6 +13,7 @@ requires = [
     'pyramid_debugtoolbar',
     'ZODB3',
     'waitress',
+    'repoze.folder',
     ]
 
 setup(name='push-hub',

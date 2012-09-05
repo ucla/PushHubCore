@@ -6,10 +6,15 @@ that will be hit when any of those topics are updated.
 """
 
 from persistent import Persistent
-from persistent.list import PersistentList
+from repoze.folder import Folder
+
+
+class SubscriberFolder(Folder):
+    """Folder to hold our subscribers"""
+    title = "Subscribers"
 
 
 class Subscriber(Persistent):
     def __init__(self, callback_url):
         self.callback_url = callback_url
-        self.topics = PersistentList()
+        self.topics = Folder()

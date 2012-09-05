@@ -8,6 +8,11 @@ generating diffs, so the hub knows what to send out to subscribers.
 from datetime import datetime
 
 from persistent import Persistent
+from repoze.folder import Folder
+
+
+class Topics(Folder):
+    title = u"Topics"
 
 
 class Topic(Persistent):

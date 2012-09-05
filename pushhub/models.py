@@ -1,11 +1,13 @@
 from persistent.mapping import PersistentMapping
 
-class MyModel(PersistentMapping):
+
+class Root(PersistentMapping):
     __parent__ = __name__ = None
+
 
 def appmaker(zodb_root):
     if not 'app_root' in zodb_root:
-        app_root = MyModel()
+        app_root = Root()
         zodb_root['app_root'] = app_root
         import transaction
         transaction.commit()
