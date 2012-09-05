@@ -21,9 +21,9 @@ class Hub(Folder):
     implements(IHub)
     __name__ = __parent__ = None
 
-    def __init__(self, topics_folder, subscribers_folder):
-        self.topics = topics_folder
-        self.subscribers = subscribers_folder
+    def __init__(self):
+        self.topics = None
+        self.subscribers = None
 
     def publish(self):
         """
