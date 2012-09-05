@@ -5,6 +5,14 @@ from functools import wraps
 
 from pyramid.httpexceptions import exception_response
 
+from .models import appmaker
+from pyramid_zodbconn import get_connection
+
+
+def root_factory(request):
+    conn = get_connection(request)
+    return appmaker(conn.root())
+
 
 def require_post(fn):
     """Requires that a function receives a POST request,

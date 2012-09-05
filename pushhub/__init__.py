@@ -1,13 +1,8 @@
 from pyramid.config import Configurator
-from pyramid_zodbconn import get_connection
 
 from .views import publish
-from .models import appmaker
+from .utils import root_factory
 
-
-def root_factory(request):
-    conn = get_connection(request)
-    return appmaker(conn.root())
 
 
 def main(global_config, **settings):
@@ -23,5 +18,4 @@ def main(global_config, **settings):
 
     config.add_route('publish', '/publish')
     config.add_view(publish, route_name='publish')
-
     return config.make_wsgi_app()
