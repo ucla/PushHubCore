@@ -5,9 +5,11 @@ Subscribers have a list of topics they are subscribed to, and callback URL
 that will be hit when any of those topics are updated.
 """
 
+from persistent import Persistent
+from persistent.list import PersistentList
 
-# Will need to change to inherit from persistent.Persistent
-class Subscriber(object):
+
+class Subscriber(Persistent):
     def __init__(self, callback_url):
         self.callback_url = callback_url
-        self.topics = []
+        self.topics = PersistentList()

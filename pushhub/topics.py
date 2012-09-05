@@ -5,7 +5,12 @@ It has a last-updated timestamp, as well as the last-seen content for
 generating diffs, so the hub knows what to send out to subscribers.
 """
 
-class Topic(object):
+from datetime import datetime
+
+from persistent import Persistent
+
+
+class Topic(Persistent):
     def __init__(self, url, timestamp, content):
         self.url = url
         self.timestamp = timestamp
