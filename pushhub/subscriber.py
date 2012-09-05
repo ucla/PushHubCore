@@ -7,14 +7,22 @@ that will be hit when any of those topics are updated.
 
 from persistent import Persistent
 from repoze.folder import Folder
+from zope.interface import Interface, implements
 
 
-class SubscriberFolder(Folder):
+class Subscribers(Folder):
     """Folder to hold our subscribers"""
     title = "Subscribers"
 
 
+class ISubscriber(Interface):
+    """Marker interface for subscribers"""
+    pass
+
+
 class Subscriber(Persistent):
+    implements(ISubscriber)
+
     def __init__(self, callback_url):
         self.callback_url = callback_url
         self.topics = Folder()

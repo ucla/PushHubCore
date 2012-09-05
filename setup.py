@@ -14,6 +14,7 @@ requires = [
     'ZODB3',
     'waitress',
     'repoze.folder',
+    'zope.interface',
     ]
 
 setup(name='push-hub',
