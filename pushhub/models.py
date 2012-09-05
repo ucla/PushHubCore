@@ -1,5 +1,8 @@
 from persistent.mapping import PersistentMapping
 
+from .subsciber import Subscribers
+from .topic import Topics
+
 
 class Root(PersistentMapping):
     __parent__ = __name__ = None
@@ -11,4 +14,17 @@ def appmaker(zodb_root):
         zodb_root['app_root'] = app_root
         import transaction
         transaction.commit()
+
+        subscribers = Subscribers()
+        app_root['subscribers'] = subscribers
+        subscribers.__name__ = 'subscribers'
+        subscribers.__parent__ = app_root
+        transaction.commit()
+
+        topics = Topics()
+        app_root['topics'] = topics
+        topics.__name__ = 'topics'
+        topics.__parent__ = app_root
+        transaction.commit()
+
     return zodb_root['app_root']
