@@ -9,7 +9,7 @@ from zope.component import provideUtility
 from zope.interface import Interface, implements
 
 
-def configure_hub(hub_impl=None):
+def configure_hub(config, hub_impl=None):
     """Registers a hub implementation logic as a ZCA utility.
 
     This should be called by the application Configurator in

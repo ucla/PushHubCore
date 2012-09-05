@@ -1,7 +1,7 @@
 from persistent.mapping import PersistentMapping
 
-from .subsciber import Subscribers
-from .topic import Topics
+from .subscriber import Subscribers
+from .topics import Topics
 
 
 class Root(PersistentMapping):
