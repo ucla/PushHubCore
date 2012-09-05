@@ -24,7 +24,22 @@ class ITopic(Interface):
 class Topic(Persistent):
     implements(ITopic)
 
-    def __init__(self, url, timestamp, content):
+    def __init__(self, url):
+        """Initialize the topic and it's timestamp/content.
+        Verification happens afterward.
+        """
+
         self.url = url
-        self.timestamp = timestamp
-        self.content = content
+        self.timestamp = None
+        self.content = None
+
+    def fetch(self):
+        """Fetches the content from the publisher's provided URL"""
+        pass
+        # update timestamp
+        # set self.content
+
+    def verify(self):
+        """Verifies that the URL provides valid Atom/RSS responses."""
+        # Call inside of fetch? Perhaps before setting the content.
+        pass

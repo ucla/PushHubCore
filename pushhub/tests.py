@@ -4,7 +4,9 @@ from pyramid import testing
 from pyramid.testing import DummyRequest
 
 from pyramid.request import Request
+
 from .views import publish
+from .topics import Topic
 
 
 class ViewTests(unittest.TestCase):
@@ -40,3 +42,18 @@ class ViewTests(unittest.TestCase):
         info = publish(request)
         self.assertEqual(info.status_code, 405)
         self.assertEqual(info.headers['Allow'], 'POST')
+
+
+class TopicTests(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_creation(self):
+        t = Topic('http://www.google.com/')
+        self.assertEqual(t.url, 'http://www.google.com/')
+        self.assertEqual(t.timestamp, None)
+        self.assertEqual(t.content, None)
