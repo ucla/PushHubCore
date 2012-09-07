@@ -19,6 +19,8 @@ def main(global_config, **settings):
 
     config.add_route('publish', '/publish')
     config.add_view(publish, route_name='publish')
+
     config.add_route('subscribe', '/subscribe')
-    config.add_view(subscribe, route_name='suscribe')
+    config.add_view(subscribe, route_name='subscribe')
+
     return config.make_wsgi_app()
