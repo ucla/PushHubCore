@@ -19,7 +19,10 @@ def require_post(fn):
     """
     @wraps(fn)
     def wrapper(*args, **kwargs):
+        # We could be called with (context, request) or just (request,)
         request = args[0]
+        if len(args) > 1:
+            request = args[1]
         if request.method != "POST":
             response = exception_response(405)
             response.headers.extend([('Allow', 'POST')])
