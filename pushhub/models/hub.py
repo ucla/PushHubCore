@@ -11,6 +11,9 @@ from zope.interface import Interface, implements
 from repoze.folder import Folder
 
 
+from .topic import Topics, Topic
+
+
 class IHub(Interface):
     """Marker interface for hub implementations"""
     pass
@@ -25,11 +28,16 @@ class Hub(Folder):
         self.topics = None
         self.subscribers = None
 
-    def publish(self):
+    def publish(self, topic_url):
         """
-        Publish a topic to a particular feed
+        Publish a topic to the hub.
         """
-        pass
+        if not self.topics:
+            self.topics = Topics()
+
+        topic = Topic(topic_url)
+        self.topics.add(topic_url, topic)
+
 
     def notify_subscribers(self):
         """

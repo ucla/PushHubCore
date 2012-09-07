@@ -7,7 +7,9 @@ from pyramid.url import urlencode
 from pyramid.request import Request
 
 from .views import publish, subscribe
+from .models.hub import Hub
 from .models.topic import Topic
+
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
@@ -64,12 +66,12 @@ class SubscribeTests(BaseTest):
 
     def test_invalid_content_type(self):
         headers = [("Content-Type", "text/plain")]
-        request = self.r('/subscribe', 
-                        headers=headers, 
+        request = self.r('/subscribe',
+                        headers=headers,
                         POST={"thing":"thing"})
         info = subscribe(request)
         self.assertEqual(info.status_code, 406)
-        self.assertEqual(info.headers['Accept'], 
+        self.assertEqual(info.headers['Accept'],
                 'application/x-www-form-urlencoded')
 
     def test_invalid_verify_type(self):
@@ -138,3 +140,22 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(t.url, 'http://www.google.com/')
         self.assertEqual(t.timestamp, None)
         self.assertEqual(t.content, None)
+
+
+class HubTests(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_creation(self):
+        hub = Hub()
+        self.assertEqual(hub.topics, None)
+        self.assertEqual(hub.subscribers, None)
+
+    def test_publish_topic(self):
+        hub = Hub()
+        hub.publish('http://www.google.com/')
+        self.assertEqual(len(hub.topics), 1)
