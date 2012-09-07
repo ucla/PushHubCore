@@ -18,6 +18,9 @@ def publish(request):
     if not topic_mode or topic_mode != 'publish':
         return exception_response(400)
 
+    if not topic_urls:
+        return exception_response(400)
+
     return exception_response(204)
 
 @require_post

@@ -1,5 +1,6 @@
 import unittest
 
+from paste.util.multidict import MultiDict
 from pyramid import testing
 from pyramid.testing import DummyRequest
 from pyramid.url import urlencode
@@ -26,6 +27,9 @@ class BaseTest(unittest.TestCase):
                             POST=POST)
 
 class PublishTests(BaseTest):
+
+    valid_headers = [("Content-Type", "application/x-www-form-urlencoded")]
+
     def test_publish(self):
         request = Request.blank('/publish')
         info = publish(request)
@@ -55,7 +59,7 @@ class PublishTests(BaseTest):
 
     def test_publish_content_type_with_correct_mode(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
-        data = {'hub.mode': 'publish'}
+        data = {'hub.mode': 'publish', 'hub.url': 'http://www.google.com/'}
         request = Request.blank('/publish', headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 204)
@@ -66,6 +70,21 @@ class PublishTests(BaseTest):
         request = Request.blank('/publish', headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 400)
+
+    def test_publish_with_no_urls(self):
+        data = {'hub.mode': 'publish'}
+        request = Request.blank('/publish', self.valid_headers, POST=data)
+        info = publish(request)
+        self.assertEqual(info.status_code, 400)
+
+    def test_publish_with_multiple_urls(self):
+        data = MultiDict({'hub.mode': 'publish'})
+        data.add('hub.url', 'http,//www.example.com')
+        data.add('hub.url', 'http,//www.site.com')
+        request = Request.blank('/publish', self.valid_headers, POST=data)
+        info = publish(request)
+        self.assertEqual(info.status_code, 204)
+
 
 class SubscribeTests(BaseTest):
     default_data = {
