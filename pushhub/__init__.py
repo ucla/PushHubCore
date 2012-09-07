@@ -2,7 +2,7 @@ from pyramid.config import Configurator
 from pyramid_zodbconn import get_connection
 
 from .models import appmaker
-from .views import publish
+from .views import publish, subscribe
 
 
 def root_factory(request):
@@ -19,4 +19,6 @@ def main(global_config, **settings):
 
     config.add_route('publish', '/publish')
     config.add_view(publish, route_name='publish')
+    config.add_route('subscribe', '/subscribe')
+    config.add_view(subscribe, route_name='suscribe')
     return config.make_wsgi_app()
