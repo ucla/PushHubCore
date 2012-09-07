@@ -6,6 +6,7 @@ generating diffs, so the hub knows what to send out to subscribers.
 """
 
 from datetime import datetime
+from urlparse import urlparse
 
 from persistent import Persistent
 from repoze.folder import Folder
@@ -28,6 +29,13 @@ class Topic(Persistent):
         """Initialize the topic and it's timestamp/content.
         Verification happens afterward.
         """
+
+        # Do some basic sanity checks
+
+        pieces = urlparse(url)
+
+        if not (pieces.scheme and pieces.netloc and pieces.path):
+            raise ValueError
 
         self.url = url
         self.timestamp = None

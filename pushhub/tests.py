@@ -141,6 +141,17 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(t.timestamp, None)
         self.assertEqual(t.content, None)
 
+    def test_bad_urls(self):
+        """
+        A 'good' URL will have:
+            * a scheme
+            * a netloc (usually server, domain, and TLD names)
+            * a path
+        """
+        self.assertRaises(ValueError, Topic, 'http://')
+        self.assertRaises(ValueError, Topic, 'www.site.com')
+        self.assertRaises(ValueError, Topic, '/path-only')
+
 
 class HubTests(unittest.TestCase):
 
@@ -159,3 +170,6 @@ class HubTests(unittest.TestCase):
         hub = Hub()
         hub.publish('http://www.google.com/')
         self.assertEqual(len(hub.topics), 1)
+        self.assertTrue('http://www.google.com/' in hub.topics.keys())
+        self.assertEqual(hub.topics['http://www.google.com/'].url, 'http://www.google.com/')
+
