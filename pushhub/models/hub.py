@@ -35,8 +35,13 @@ class Hub(Folder):
         if not self.topics:
             self.topics = Topics()
 
-        topic = Topic(topic_url)
-        self.topics.add(topic_url, topic)
+        topic = self.topics.get(topic_url, None)
+
+        if not topic:
+            topic = Topic(topic_url)
+            self.topics.add(topic_url, topic)
+
+        topic.ping()
 
 
     def notify_subscribers(self):

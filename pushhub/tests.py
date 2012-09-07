@@ -1,3 +1,4 @@
+import datetime
 import unittest
 
 from paste.util.multidict import MultiDict
@@ -185,6 +186,13 @@ class TopicTests(unittest.TestCase):
         self.assertRaises(ValueError, Topic, 'www.site.com')
         self.assertRaises(ValueError, Topic, '/path-only')
 
+    def test_pinged_time(self):
+        t = Topic('http://www.google.com/')
+        original_time = t.last_pinged
+        t.ping()
+        new_time = t.last_pinged
+        self.assertTrue(original_time < new_time)
+
 
 class HubTests(unittest.TestCase):
 
@@ -205,4 +213,16 @@ class HubTests(unittest.TestCase):
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue('http://www.google.com/' in hub.topics.keys())
         self.assertEqual(hub.topics['http://www.google.com/'].url, 'http://www.google.com/')
+
+    def test_publish_existing_topic(self):
+        """
+        Existing topics should have their 'pinged' time updated.
+        """
+        hub = Hub()
+        hub.publish('http://www.google.com/')
+        first_time = hub.topics['http://www.google.com/'].last_pinged
+        hub.publish('http://www.google.com/')
+        second_time = hub.topics['http://www.google.com/'].last_pinged
+        self.assertEqual(len(hub.topics), 1)
+        self.assertTrue(second_time > first_time)
 

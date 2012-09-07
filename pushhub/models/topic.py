@@ -40,6 +40,8 @@ class Topic(Persistent):
         self.url = url
         self.timestamp = None
         self.content = None
+        self.last_pinged = None
+        self.ping()
 
     def fetch(self):
         """Fetches the content from the publisher's provided URL"""
@@ -51,3 +53,7 @@ class Topic(Persistent):
         """Verifies that the URL provides valid Atom/RSS responses."""
         # Call inside of fetch? Perhaps before setting the content.
         pass
+
+    def ping(self):
+        """Registers the last time a publisher pinged the hub for this topic."""
+        self.last_pinged = datetime.now()
