@@ -23,6 +23,7 @@ def publish(request):
 
     return exception_response(204)
 
+
 @require_post
 def subscribe(request):
     # required
@@ -34,30 +35,39 @@ def subscribe(request):
     verify_token = unicode(request.POST.get('hub.verify_token', ''))
     secret = unicode(request.POST.get('hub.secret', '')) or None
     lease_seconds = (
-       request.POST.get('hub.lease_seconds', '') or str(DEFAULT_LEASE_SECONDS))
-
-    error_message = None
+        request.POST.get('hub.lease_seconds', '') or
+        str(DEFAULT_LEASE_SECONDS)
+    )
 
     error_message = None
     if not callback or not is_valid_url(callback):
-      error_message = ('Invalid parameter: hub.callback; '
-                       'must be valid URI with no fragment and '
-                       'optional port %s' % ','.join(VALID_PORTS))
+        error_message = (
+            'Invalid parameter: hub.callback; '
+            'must be valid URI with no fragment and '
+            'optional port %s' % ','.join(VALID_PORTS)
+        )
     else:
-      callback = normalize_iri(callback)
+        callback = normalize_iri(callback)
 
-    enabled_types = [vtype for vtype in verify_type_list
-            if vtype in ('async', 'sync')]
+    enabled_types = [
+        vtype for vtype in verify_type_list
+        if vtype in ('async', 'sync')
+    ]
+
     if not enabled_types:
-      error_message = 'Invalid values for hub.verify: %s' % (verify_type_list,)
+        error_message = (
+            'Invalid values for hub.verify: %s' %
+            (verify_type_list,)
+        )
     else:
-      verify_type = enabled_types
+        verify_type = enabled_types
 
     if error_message:
-      return exception_response(400,
-                     body=error_message,
-                     headers=[("Content-Type", "text/plain")]
-                     )
+        return exception_response(
+            400,
+            body=error_message,
+            headers=[("Content-Type", "text/plain")]
+        )
 
     # save or retrieve subscription
     # give preference to sync
@@ -69,7 +79,5 @@ def subscribe(request):
         # can put it in a queue to process later, return Accepted
         # assuming some celery tasks make sense here
         return exception_response(202)
-
     # verified and active
     return exception_response(204)
-

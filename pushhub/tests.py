@@ -23,9 +23,12 @@ class BaseTest(unittest.TestCase):
     def r(self, url, headers=[], POST={}):
         if not headers:
             headers = [("Content-Type", "application/x-www-form-urlencoded")]
-        return Request.blank(url,
-                            headers=headers,
-                            POST=POST)
+        return Request.blank(
+            url,
+            headers=headers,
+            POST=POST
+        )
+
 
 class PublishTests(BaseTest):
 
@@ -89,8 +92,8 @@ class PublishTests(BaseTest):
 
 class SubscribeTests(BaseTest):
     default_data = {
-        'hub.verify':'sync',
-        'hub.callback':'http://www.google.com'
+        'hub.verify': 'sync',
+        'hub.callback': 'http://www.google.com'
     }
 
     def test_subscribe(self):
@@ -100,18 +103,24 @@ class SubscribeTests(BaseTest):
 
     def test_invalid_content_type(self):
         headers = [("Content-Type", "text/plain")]
-        request = self.r('/subscribe',
-                        headers=headers,
-                        POST={"thing":"thing"})
+        request = self.r(
+            '/subscribe',
+            headers=headers,
+            POST={"thing": "thing"}
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 406)
-        self.assertEqual(info.headers['Accept'],
-                'application/x-www-form-urlencoded')
+        self.assertEqual(
+            info.headers['Accept'],
+            'application/x-www-form-urlencoded'
+        )
 
     def test_invalid_verify_type(self):
         data = {"hub.verify": "bogus"}
-        request = self.r('/subscribe',
-                        POST=data)
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 400)
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
@@ -120,31 +129,39 @@ class SubscribeTests(BaseTest):
     def test_sync_verify(self):
         data = self.default_data
         data.update({"hub.verify": "sync"})
-        request = self.r('/subscribe',
-                        POST=data)
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
     def test_multiple_verify_types(self):
         data = {
-            'hub.verify':['async','sync'],
-            'hub.callback':'http://www.google.com'
+            'hub.verify': ['async', 'sync'],
+            'hub.callback': 'http://www.google.com'
         }
-        request = self.r('/subscribe',
-                        POST=urlencode(data))
+        request = self.r(
+            '/subscribe',
+            POST=urlencode(data)
+        )
         info = subscribe(request)
         # should give preference to sync
         self.assertEqual(info.status_code, 204)
-        data.update({'hub.verify': ['bogus','async']})
-        request = self.r('/subscribe',
-                        POST=urlencode(data))
+        data.update({'hub.verify': ['bogus', 'async']})
+        request = self.r(
+            '/subscribe',
+            POST=urlencode(data)
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 202)
 
     def test_multiple_invalid_verify_types(self):
         data = {"hub.verify": ['bogus', 'wrong']}
-        request = self.r('/subscribe',
-                        POST=urlencode(data))
+        request = self.r(
+            '/subscribe',
+            POST=urlencode(data)
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 400)
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
@@ -152,14 +169,26 @@ class SubscribeTests(BaseTest):
 
     def test_invalid_callback(self):
         data = {
-            'hub.verify':'sync',
-            'hub.callback':'www.google.com'
+            'hub.verify': 'sync',
+            'hub.callback': 'www.google.com'
         }
-        request = self.r('/subscribe',
-                        POST=data)
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.callback' in info.body)
+
+    def test_valid_callback(self):
+        data = self.default_data
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 204)
+
 
 class TopicTests(unittest.TestCase):
 
@@ -212,7 +241,10 @@ class HubTests(unittest.TestCase):
         hub.publish('http://www.google.com/')
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue('http://www.google.com/' in hub.topics.keys())
-        self.assertEqual(hub.topics['http://www.google.com/'].url, 'http://www.google.com/')
+        self.assertEqual(
+            hub.topics['http://www.google.com/'].url, 
+            'http://www.google.com/'
+        )
 
     def test_publish_existing_topic(self):
         """
