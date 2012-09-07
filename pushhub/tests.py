@@ -16,18 +16,21 @@ from .models.topic import Topic
 class BaseTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        # Create an in-memory instance of the hub so requests can use it
+        self.root = Hub()
 
     def tearDown(self):
         testing.tearDown()
+        self.root = None
 
     def r(self, url, headers=[], POST={}):
         if not headers:
             headers = [("Content-Type", "application/x-www-form-urlencoded")]
-        return Request.blank(
-            url,
-            headers=headers,
-            POST=POST
-        )
+        req = Request.blank(url,
+                            headers=headers,
+                            POST=POST)
+        req.root = self.root
+        return req
 
 
 class PublishTests(BaseTest):
@@ -50,7 +53,7 @@ class PublishTests(BaseTest):
 
     def test_publish_content_type_without_mode(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
-        request = Request.blank('/publish', headers, POST={})
+        request = self.r('/publish', headers, POST={})
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
@@ -64,28 +67,28 @@ class PublishTests(BaseTest):
     def test_publish_content_type_with_correct_mode(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'publish', 'hub.url': 'http://www.google.com/'}
-        request = Request.blank('/publish', headers, POST=data)
+        request = self.r('/publish', headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 204)
 
     def test_publish_content_type_with_incorrect_mode(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'bad'}
-        request = Request.blank('/publish', headers, POST=data)
+        request = self.r('/publish', headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
     def test_publish_with_no_urls(self):
         data = {'hub.mode': 'publish'}
-        request = Request.blank('/publish', self.valid_headers, POST=data)
+        request = self.r('/publish', self.valid_headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
     def test_publish_with_multiple_urls(self):
         data = MultiDict({'hub.mode': 'publish'})
-        data.add('hub.url', 'http,//www.example.com')
-        data.add('hub.url', 'http,//www.site.com')
-        request = Request.blank('/publish', self.valid_headers, POST=data)
+        data.add('hub.url', 'http://www.example.com/')
+        data.add('hub.url', 'http://www.site.com/')
+        request = self.r('/publish', self.valid_headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 204)
 

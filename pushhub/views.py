@@ -15,11 +15,30 @@ def publish(request):
     topic_mode = request.POST.get('hub.mode', '')
     topic_urls = request.POST.getall('hub.url')
 
+    bad_data = False
+    error_msg = None
+
     if not topic_mode or topic_mode != 'publish':
-        return exception_response(400)
+        bad_data = True
+        error_msg = "Invalid or unspecified mode."
 
     if not topic_urls:
-        return exception_response(400)
+        bad_data = True
+        error_msg = "No topic URLs provided"
+
+    hub = request.root
+
+    for topic_url in topic_urls:
+        try:
+            hub.publish(topic_url)
+        except ValueError:
+            bad_data = True
+            error_msg = "Malformed URL: %s" % topic_url
+
+    if bad_data and error_msg:
+        return exception_response(400,
+                                  body=error_msg,
+                                  headers=[('Content-Type', 'text/plain')])
 
     return exception_response(204)
 
