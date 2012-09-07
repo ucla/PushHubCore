@@ -40,11 +40,11 @@ class PublishTests(BaseTest):
         info = publish(request)
         self.assertEqual(info.status_code, 406)
 
-    def test_publish_content_type(self):
+    def test_publish_content_type_without_mode(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         request = Request.blank('/publish', headers, POST={})
         info = publish(request)
-        self.assertEqual(info.status_code, 204)
+        self.assertEqual(info.status_code, 400)
 
     def test_publish_wrong_method(self):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
@@ -52,6 +52,20 @@ class PublishTests(BaseTest):
         info = publish(request)
         self.assertEqual(info.status_code, 405)
         self.assertEqual(info.headers['Allow'], 'POST')
+
+    def test_publish_content_type_with_correct_mode(self):
+        headers = [("Content-Type", "application/x-www-form-urlencoded")]
+        data = {'hub.mode': 'publish'}
+        request = Request.blank('/publish', headers, POST=data)
+        info = publish(request)
+        self.assertEqual(info.status_code, 204)
+
+    def test_publish_content_type_with_incorrect_mode(self):
+        headers = [("Content-Type", "application/x-www-form-urlencoded")]
+        data = {'hub.mode': 'bad'}
+        request = Request.blank('/publish', headers, POST=data)
+        info = publish(request)
+        self.assertEqual(info.status_code, 400)
 
 class SubscribeTests(BaseTest):
     default_data = {
