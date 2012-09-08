@@ -45,12 +45,13 @@ def publish(request):
 
 @require_post
 def subscribe(request):
-    # required
+    # required        
     callback = request.POST.get('hub.callback', '')
     topic = request.POST.get('hub.topic', '')
     verify_type_list = [s.lower() for s in request.POST.getall('hub.verify')]
     mode = request.POST.get('hub.mode', '').lower()
     # optional, per the spec we can support these or not.
+    # currently we will not support these options
     verify_token = unicode(request.POST.get('hub.verify_token', ''))
     secret = unicode(request.POST.get('hub.secret', '')) or None
     lease_seconds = (
@@ -66,7 +67,23 @@ def subscribe(request):
             'optional port %s' % ','.join(VALID_PORTS)
         )
     else:
-        callback = normalize_iri(callback)
+        callback = normalize_iri(callback)  
+
+    if not topic or not is_valid_url(topic):
+        error_message = (
+            'Invalid parameter: hub.topic; '
+            'must be valid URI with no fragment and '
+            'optional port %s' % ','.join(VALID_PORTS)
+        )
+    else:
+        topic = normalize_iri(topic)
+
+    if mode not in ('subscribe','unsubscribe'):
+        error_message = (
+            'Invalid parameter: hub.mode; '
+            'Supported values are "subscribe", "unsubscribe"'
+            'Given: %s' % mode
+        )
 
     enabled_types = [
         vtype for vtype in verify_type_list

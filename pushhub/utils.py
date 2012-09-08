@@ -8,6 +8,8 @@ from functools import wraps
 
 from pyramid.httpexceptions import exception_response
 
+from .views import VALID_PORTS
+
 
 def require_post(fn):
     """Requires that a function receives a POST request,
@@ -68,7 +70,7 @@ def is_valid_url(url):
         return False
 
     netloc, port = (split.netloc.split(':', 1) + [''])[:2]
-    if port and not is_dev_env() and port not in VALID_PORTS:
+    if port and port not in VALID_PORTS:
         return False
 
     if split.fragment:

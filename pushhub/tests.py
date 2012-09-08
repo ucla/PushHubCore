@@ -94,10 +94,12 @@ class PublishTests(BaseTest):
 
 
 class SubscribeTests(BaseTest):
-    default_data = {
+    default_data = MultiDict({
         'hub.verify': 'sync',
-        'hub.callback': 'http://www.google.com'
-    }
+        'hub.callback': 'http://www.google.com',
+        'hub.mode': "subscribe",
+        'hub.topic': "http://www.google.com"
+    })
 
     def test_subscribe(self):
         request = Request.blank('/subscribe')
@@ -140,30 +142,38 @@ class SubscribeTests(BaseTest):
         self.assertEqual(info.status_code, 204)
 
     def test_multiple_verify_types(self):
-        data = {
-            'hub.verify': ['async', 'sync'],
-            'hub.callback': 'http://www.google.com'
-        }
+        data = self.default_data.copy()
+        del data["hub.verify"]
+        data.add('hub.verify', 'async')
+        data.add('hub.verify', 'sync')
         request = self.r(
             '/subscribe',
-            POST=urlencode(data)
+            POST=data
         )
         info = subscribe(request)
         # should give preference to sync
         self.assertEqual(info.status_code, 204)
-        data.update({'hub.verify': ['bogus', 'async']})
+
+    def test_multiple_verify_types_one_valid(self):
+        data = self.default_data.copy()
+        del data["hub.verify"]
+        data.add('hub.verify', 'bogus')
+        data.add('hub.verify', 'async')
         request = self.r(
             '/subscribe',
-            POST=urlencode(data)
+            POST=data
         )
         info = subscribe(request)
         self.assertEqual(info.status_code, 202)
 
     def test_multiple_invalid_verify_types(self):
-        data = {"hub.verify": ['bogus', 'wrong']}
+        data = self.default_data.copy()
+        del data["hub.verify"]
+        data.add('hub.verify', 'bad')
+        data.add('hub.verify', 'wrong')
         request = self.r(
             '/subscribe',
-            POST=urlencode(data)
+            POST=data
         )
         info = subscribe(request)
         self.assertEqual(info.status_code, 400)
@@ -171,10 +181,9 @@ class SubscribeTests(BaseTest):
         self.assertTrue("hub.verify" in info.body)
 
     def test_invalid_callback(self):
-        data = {
-            'hub.verify': 'sync',
-            'hub.callback': 'www.google.com'
-        }
+        data = self.default_data.copy()
+        del data['hub.callback']
+        data.add("hub.callback", "www.google.com")
         request = self.r(
             '/subscribe',
             POST=data
@@ -184,13 +193,67 @@ class SubscribeTests(BaseTest):
         self.assertTrue('hub.callback' in info.body)
 
     def test_valid_callback(self):
-        data = self.default_data
+        data = self.default_data.copy()
         request = self.r(
             '/subscribe',
             POST=data
         )
         info = subscribe(request)
         self.assertEqual(info.status_code, 204)
+
+    def test_invalid_mode(self):
+        data = self.default_data.copy()
+        del data['hub.mode']
+        data.add('hub.mode', 'bad')
+        request = self.r(
+            '/subscribe',
+            POST=data,
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 400)
+        self.assertTrue('hub.mode' in info.body)
+
+    def test_valid_mode(self):
+        data = self.default_data.copy()
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 204)
+
+    def test_invalid_mode(self):
+        data = self.default_data.copy()
+        del data['hub.mode']
+        data.add('hub.mode', 'bogus')
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 400)
+        self.assertTrue('hub.mode' in info.body)
+
+    def test_valid_topic(self):
+        data = self.default_data.copy()
+        request = self.r(
+            '/subscribe',
+            POST=data
+        ) 
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 204)
+
+    def test_invalid_topic(self):
+        data = self.default_data.copy()
+        del data['hub.topic']
+        data.add('hub.topic', 'http://google.com/#fragment')
+        request = self.r(
+           '/subscribe',
+           POST=data 
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 400)
+        self.assertTrue('hub.topic' in info.body)
 
 
 class TopicTests(unittest.TestCase):
