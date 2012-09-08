@@ -8,8 +8,6 @@ from functools import wraps
 
 from pyramid.httpexceptions import exception_response
 
-from .views import VALID_PORTS
-
 
 def require_post(fn):
     """Requires that a function receives a POST request,
@@ -65,6 +63,7 @@ def normalize_iri(url):
 # taken from the pubsubhubbub source
 def is_valid_url(url):
     """Returns True if the URL is valid, False otherwise."""
+    from .views import VALID_PORTS
     split = urlparse.urlparse(url)
     if not split.scheme in ('http', 'https'):
         return False

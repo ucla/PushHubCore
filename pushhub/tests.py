@@ -11,6 +11,7 @@ from pyramid.request import Request
 from .views import publish, subscribe
 from .models.hub import Hub
 from .models.topic import Topic
+from .utils import is_valid_url
 
 
 class BaseTest(unittest.TestCase):
@@ -323,4 +324,28 @@ class HubTests(unittest.TestCase):
         second_time = hub.topics['http://www.google.com/'].last_pinged
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue(second_time > first_time)
+
+
+class UtilTests(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_is_valid_url(self):
+        """
+        A 'good' URL will have:
+            * a scheme
+            * a netloc (usually server, domain, and TLD names)
+            * a path
+            * no fragments
+            # a valid port
+        """
+        self.assertFalse(is_valid_url('google.com'))
+        self.assertFalse(is_valid_url('http://google.com/#fragment'))
+        # see .views.VALID_PORTS for a list of valid ports
+        self.assertFalse(is_valid_url('https://www.google.com:8888'))
+        self.assertFalse(is_valid_url("/path"))
 

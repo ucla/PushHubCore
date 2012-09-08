@@ -78,7 +78,7 @@ def subscribe(request):
     else:
         topic = normalize_iri(topic)
 
-    if mode not in ('subscribe','unsubscribe'):
+    if mode not in ('subscribe', 'unsubscribe'):
         error_message = (
             'Invalid parameter: hub.mode; '
             'Supported values are "subscribe", "unsubscribe"'
