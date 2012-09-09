@@ -45,13 +45,13 @@ def publish(request):
 
 @require_post
 def subscribe(request):
-    # required        
+    # required
     callback = request.POST.get('hub.callback', '')
     topic = request.POST.get('hub.topic', '')
     verify_type_list = [s.lower() for s in request.POST.getall('hub.verify')]
     mode = request.POST.get('hub.mode', '').lower()
     # optional, per the spec we can support these or not.
-    # currently we will not support these options
+    # TODO: support for the following optional arguments
     verify_token = unicode(request.POST.get('hub.verify_token', ''))
     secret = unicode(request.POST.get('hub.secret', '')) or None
     lease_seconds = (
@@ -67,7 +67,7 @@ def subscribe(request):
             'optional port %s' % ','.join(VALID_PORTS)
         )
     else:
-        callback = normalize_iri(callback)  
+        callback = normalize_iri(callback)
 
     if not topic or not is_valid_url(topic):
         error_message = (
@@ -105,15 +105,30 @@ def subscribe(request):
             headers=[("Content-Type", "text/plain")]
         )
 
-    # save or retrieve subscription
+    hub = request.root
+
     # give preference to sync
     if 'sync' in verify_type:
-        # verify subscription now
-        # if valid, return 204 else 409
-        pass
+        if mode == 'subscribe':
+            verified = hub.subscribe(callback, topic)
+        else:
+            verified = hub.unsubscribe(callback, topic)
+
+        if not verified:
+            return exception_response(
+                409,
+                body="Subscription intent not verified",
+                headers=[("Content-Type", "text/plain")]
+            )
     else:
-        # can put it in a queue to process later, return Accepted
-        # assuming some celery tasks make sense here
-        return exception_response(202)
+        # TODO: async verification
+        # should return a 202 and then perform verification
+        # at a later date as determined by the hub
+        # we'll return a 400 right now until it's supported
+        return exception_response(
+            400,
+            body="async verification currently not supported",
+            headers=[("Content-Type", "text/plain")]
+        )
     # verified and active
     return exception_response(204)

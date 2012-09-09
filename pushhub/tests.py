@@ -1,16 +1,13 @@
-import datetime
 import unittest
 
 from paste.util.multidict import MultiDict
 from pyramid import testing
-from pyramid.testing import DummyRequest
-from pyramid.url import urlencode
-
 from pyramid.request import Request
 
 from .views import publish, subscribe
 from .models.hub import Hub
 from .models.topic import Topic
+from .models.subscriber import Subscriber
 from .utils import is_valid_url
 
 
@@ -97,9 +94,9 @@ class PublishTests(BaseTest):
 class SubscribeTests(BaseTest):
     default_data = MultiDict({
         'hub.verify': 'sync',
-        'hub.callback': 'http://www.google.com',
+        'hub.callback': 'http://www.google.com/',
         'hub.mode': "subscribe",
-        'hub.topic': "http://www.google.com"
+        'hub.topic': "http://www.google.com/"
     })
 
     def test_subscribe(self):
@@ -132,40 +129,17 @@ class SubscribeTests(BaseTest):
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
         self.assertTrue("hub.verify" in info.body)
 
-    def test_sync_verify(self):
-        data = self.default_data
-        data.update({"hub.verify": "sync"})
-        request = self.r(
-            '/subscribe',
-            POST=data
-        )
-        info = subscribe(request)
-        self.assertEqual(info.status_code, 204)
-
-    def test_multiple_verify_types(self):
+    def test_multiple_verify_types_one_valid(self):
         data = self.default_data.copy()
         del data["hub.verify"]
-        data.add('hub.verify', 'async')
+        data.add('hub.verify', 'bogus')
         data.add('hub.verify', 'sync')
         request = self.r(
             '/subscribe',
             POST=data
         )
         info = subscribe(request)
-        # should give preference to sync
         self.assertEqual(info.status_code, 204)
-
-    def test_multiple_verify_types_one_valid(self):
-        data = self.default_data.copy()
-        del data["hub.verify"]
-        data.add('hub.verify', 'bogus')
-        data.add('hub.verify', 'async')
-        request = self.r(
-            '/subscribe',
-            POST=data
-        )
-        info = subscribe(request)
-        self.assertEqual(info.status_code, 202)
 
     def test_multiple_invalid_verify_types(self):
         data = self.default_data.copy()
@@ -223,24 +197,12 @@ class SubscribeTests(BaseTest):
         info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
-    def test_invalid_mode(self):
-        data = self.default_data.copy()
-        del data['hub.mode']
-        data.add('hub.mode', 'bogus')
-        request = self.r(
-            '/subscribe',
-            POST=data
-        )
-        info = subscribe(request)
-        self.assertEqual(info.status_code, 400)
-        self.assertTrue('hub.mode' in info.body)
-
     def test_valid_topic(self):
         data = self.default_data.copy()
         request = self.r(
             '/subscribe',
             POST=data
-        ) 
+        )
         info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
@@ -249,12 +211,54 @@ class SubscribeTests(BaseTest):
         del data['hub.topic']
         data.add('hub.topic', 'http://google.com/#fragment')
         request = self.r(
-           '/subscribe',
-           POST=data 
+            '/subscribe',
+            POST=data
         )
         info = subscribe(request)
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.topic' in info.body)
+
+    def test_not_verified_subscription(self):
+        data = self.default_data.copy()
+        del data["hub.callback"]
+        data.add('hub.callback', 'http://httpbin.org/status/404')
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
+        info = subscribe(request)
+        self.assertEqual(info.status_code, 409)
+
+
+class SubscriberTests(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_creation(self):
+        s = Subscriber('http://www.google.com')
+        self.assertEqual(s.callback_url, 'http://www.google.com')
+
+    def test_bad_urls(self):
+        """
+        A 'good' URL will have:
+            * a scheme
+            * a netloc (usually server, domain, and TLD names)
+            * not only a path
+            * no fragments
+            # a valid port
+        """
+        self.assertRaises(ValueError, Subscriber, 'http://')
+        self.assertRaises(ValueError, Subscriber, 'www.site.com')
+        self.assertRaises(ValueError, Subscriber, '/path-only')
+        self.assertRaises(
+            ValueError,
+            Subscriber,
+            'http://google.com/#fragment'
+        )
 
 
 class TopicTests(unittest.TestCase):
@@ -309,7 +313,7 @@ class HubTests(unittest.TestCase):
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue('http://www.google.com/' in hub.topics.keys())
         self.assertEqual(
-            hub.topics['http://www.google.com/'].url, 
+            hub.topics['http://www.google.com/'].url,
             'http://www.google.com/'
         )
 
@@ -325,6 +329,36 @@ class HubTests(unittest.TestCase):
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue(second_time > first_time)
 
+    def test_subscribe(self):
+        hub = Hub()
+        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        self.assertEqual(len(hub.subscribers), 1)
+        self.assertTrue('http://www.google.com/' in hub.subscribers.keys())
+        self.assertEqual(
+            hub.subscribers['http://www.google.com/'].callback_url,
+            'http://www.google.com/'
+        )
+
+    def test_existing_subscription(self):
+        hub = Hub()
+        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        self.assertEqual(len(hub.subscribers), 1)
+        sub = hub.get_subscriber('http://www.google.com/')
+        self.assertEqual(len(sub.topics), 1)
+
+    def test_unsubscribe(self):
+        hub = Hub()
+        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        sub = hub.get_subscriber('http://www.google.com/')
+        self.assertEqual(len(sub.topics), 1)
+        self.assertTrue('http://www.google.com/' in sub.topics.keys())
+        hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
+        self.assertEqual(len(sub.topics), 0)
+        # test repeated unsubscribe
+        hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
+        self.assertEqual(len(sub.topics), 0)
+
 
 class UtilTests(unittest.TestCase):
 
@@ -339,7 +373,7 @@ class UtilTests(unittest.TestCase):
         A 'good' URL will have:
             * a scheme
             * a netloc (usually server, domain, and TLD names)
-            * a path
+            * not only a path
             * no fragments
             # a valid port
         """
@@ -348,4 +382,4 @@ class UtilTests(unittest.TestCase):
         # see .views.VALID_PORTS for a list of valid ports
         self.assertFalse(is_valid_url('https://www.google.com:8888'))
         self.assertFalse(is_valid_url("/path"))
-
+        self.assertFalse(is_valid_url("http://"))

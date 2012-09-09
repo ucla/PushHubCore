@@ -15,6 +15,7 @@ requires = [
     'waitress',
     'repoze.folder',
     'zope.interface',
+    'requests==0.14.0',
     ]
 
 setup(name='push-hub',

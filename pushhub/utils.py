@@ -72,6 +72,9 @@ def is_valid_url(url):
     if port and port not in VALID_PORTS:
         return False
 
+    if not netloc:
+        return False
+
     if split.fragment:
         return False
 
