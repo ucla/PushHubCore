@@ -34,7 +34,7 @@ class Hub(Folder):
         """
         Publish a topic to the hub.
         """
-        topic = self.get_topic(topic_url)
+        topic = self.get_or_create_topic(topic_url)
         topic.ping()
 
     def notify_subscribers(self):
@@ -51,8 +51,8 @@ class Hub(Folder):
         Returns:
             True if subscription verification is successful, False otherwise.
         """
-        topic = self.get_topic(topic_url)
-        subscriber = self.get_subscriber(callback_url)
+        topic = self.get_or_create_topic(topic_url)
+        subscriber = self.get_or_create_subscriber(callback_url)
 
         verified = self.verify_subscription(subscriber, topic, "subscribe")
         if verified:
@@ -69,8 +69,8 @@ class Hub(Folder):
         Unsubscribe a subscriber to a topic
 
         """
-        topic = self.get_topic(topic_url)
-        subscriber = self.get_subscriber(callback_url)
+        topic = self.get_or_create_topic(topic_url)
+        subscriber = self.get_or_create_subscriber(callback_url)
 
         verified = self.verify_subscription(subscriber, topic, "unsubscribe")
         if verified:
@@ -107,7 +107,7 @@ class Hub(Folder):
 
         return True
 
-    def get_topic(self, topic_url):
+    def get_or_create_topic(self, topic_url):
         """
         Retrieve or create a topic
         """
@@ -122,7 +122,7 @@ class Hub(Folder):
 
         return topic
 
-    def get_subscriber(self, callback_url):
+    def get_or_create_subscriber(self, callback_url):
         """
         Retrieve or create a subscriber
         """

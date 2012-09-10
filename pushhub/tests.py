@@ -346,13 +346,13 @@ class HubTests(unittest.TestCase):
         hub.subscribe('http://www.google.com/', 'http://www.google.com/')
         hub.subscribe('http://www.google.com/', 'http://www.google.com/')
         self.assertEqual(len(hub.subscribers), 1)
-        sub = hub.get_subscriber('http://www.google.com/')
+        sub = hub.get_or_create_subscriber('http://www.google.com/')
         self.assertEqual(len(sub.topics), 1)
 
     def test_unsubscribe(self):
         hub = Hub()
         hub.subscribe('http://www.google.com/', 'http://www.google.com/')
-        sub = hub.get_subscriber('http://www.google.com/')
+        sub = hub.get_or_create_subscriber('http://www.google.com/')
         self.assertEqual(len(sub.topics), 1)
         self.assertTrue('http://www.google.com/' in sub.topics.keys())
         hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
