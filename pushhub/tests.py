@@ -94,7 +94,9 @@ class PublishTests(BaseTest):
 class SubscribeTests(BaseTest):
     default_data = MultiDict({
         'hub.verify': 'sync',
-        'hub.callback': 'http://www.google.com/',
+        # returns GET data so it will return the
+        # hubs challenge string during verification
+        'hub.callback': 'http://httpbin.org/get',
         'hub.mode': "subscribe",
         'hub.topic': "http://www.google.com/"
     })
