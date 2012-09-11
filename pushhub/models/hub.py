@@ -144,8 +144,12 @@ class Hub(Folder):
         choices = ascii_letters + digits
         return ''.join(random.choice(choices) for i in xrange(128))
 
-    def fetch_content(self):
+    def fetch_content(self, hub_url):
         """
         Fetches the content at all topic URLs.
         """
-        pass
+        for topic_id, topic in self.topics.items():
+            try:
+                topic.fetch(hub_url)
+            except ValueError:
+                continue

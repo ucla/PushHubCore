@@ -19,12 +19,24 @@ good_atom = open(path + '/fixtures/example.xml', 'r').read()
 
 
 class MockResponse(object):
-    def __init__(self, content=None, headers=None):
+    def __init__(self, content=None, headers=None, status_code=None):
         self.content = content
         self.headers = headers
+        self.status_code = status_code
 
     def __call__(self, *args, **kwargs):
         return self
+
+
+class MultiResponse(object):
+    def __init__(self, mapping):
+        self.mapping = mapping
+
+    def __call__(self, url, *args, **kwargs):
+        if url in self.mapping.keys():
+            return self.mapping[url]
+        else:
+            return MockResponse(status_code=404)
 
 
 class BaseTest(unittest.TestCase):
@@ -414,6 +426,40 @@ class HubTests(unittest.TestCase):
         # test repeated unsubscribe
         hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
         self.assertEqual(len(sub.topics), 0)
+
+    @patch('requests.get', new_callable=MockResponse, content=good_atom)
+    def test_fetch_all_topics(self, mock):
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        hub.publish('http://www.google.com/')
+        hub.fetch_content('http://myhub.com')
+        first = hub.topics.get('http://httpbin.org/get')
+        second = hub.topics.get('http://www.google.com/')
+        self.assertTrue(first.timestamp is not None)
+        self.assertTrue('John Doe' in first.content)
+        self.assertTrue(second.timestamp is not None)
+        self.assertTrue('John Doe' in second.content)
+
+    def test_fetch_all_topics_one_error(self):
+        """Allow a test topic to fail; others should be unaffected
+        """
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        hub.publish('http://www.google.com/')
+        urls = {
+            'http://httpbin.org/get': MockResponse(content=good_atom),
+            'http://www.google.com/': MockResponse(content="adslkfhadslfhd"),
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            hub.fetch_content('http://myhub.com')
+        good = hub.topics.get('http://httpbin.org/get')
+        bad = hub.topics.get('http://www.google.com/')
+
+        self.assertTrue(good.timestamp is not None)
+        self.assertTrue('John Doe' in good.content)
+
+        self.assertTrue(bad.timestamp is None)
+        self.assertTrue(bad.content is None)
 
 
 class UtilTests(unittest.TestCase):
