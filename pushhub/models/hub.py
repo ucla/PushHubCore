@@ -146,5 +146,6 @@ class Hub(Folder):
 
     def fetch_content(self):
         """
-        Fetches the content at a topic URL.
+        Fetches the content at all topic URLs.
         """
+        pass

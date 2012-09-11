@@ -310,6 +310,14 @@ class TopicTests(unittest.TestCase):
         t = Topic('http://www.google.com/')
         self.assertRaises(ValueError, t.remove_subscriber)
 
+    def test_fetching_url_content(self):
+        t = Topic('http://httpbin.org/get')
+        t.fetch('http://myhub.com/')
+        # side-effects of a fetch
+        self.assertTrue(t.timestamp is not None)
+        self.assertTrue(t.content is not None)
+        self.assertTrue('myhub.com' in t.content)
+
 
 class HubTests(unittest.TestCase):
 

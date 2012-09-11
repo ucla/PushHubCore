@@ -9,6 +9,7 @@ from datetime import datetime
 from urlparse import urlparse
 
 from persistent import Persistent
+import requests
 from repoze.folder import Folder
 from zope.interface import Interface, implements
 
@@ -44,11 +45,17 @@ class Topic(Persistent):
         self.last_pinged = None
         self.ping()
 
-    def fetch(self):
+    def fetch(self, hub_url):
         """Fetches the content from the publisher's provided URL"""
-        pass
-        # update timestamp
-        # set self.content
+
+        user_agent = "PuSH Hub (+%s; %s)" % (hub_url, self.subscribers)
+
+        headers = {'User-Agent': user_agent}
+
+        response = requests.get(self.url, headers=headers)
+
+        self.content = response.content
+        self.timestamp = datetime.now()
 
     def verify(self):
         """Verifies that the URL provides valid Atom/RSS responses."""
