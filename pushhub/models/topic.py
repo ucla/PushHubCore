@@ -8,6 +8,7 @@ generating diffs, so the hub knows what to send out to subscribers.
 from datetime import datetime
 from urlparse import urlparse
 
+from feedparser import parse
 from persistent import Persistent
 import requests
 from repoze.folder import Folder
@@ -57,10 +58,14 @@ class Topic(Persistent):
         self.content = response.content
         self.timestamp = datetime.now()
 
-    def verify(self):
+    def verify(self, content):
         """Verifies that the URL provides valid Atom/RSS responses."""
-        # Call inside of fetch? Perhaps before setting the content.
-        pass
+        parsed = parse(content)
+
+        if parsed.bozo:
+            return False
+        else:
+            return True
 
     def ping(self):
         """Registers the last time a publisher pinged the hub for this topic."""

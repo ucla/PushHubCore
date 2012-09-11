@@ -10,6 +10,12 @@ from .models.topic import Topic
 from .models.subscriber import Subscriber
 from .utils import is_valid_url
 
+import os
+
+path = os.path.abspath(os.path.dirname(__file__))
+
+good_atom = open(path + '/fixtures/example.xml', 'r').read()
+
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
@@ -317,6 +323,15 @@ class TopicTests(unittest.TestCase):
         self.assertTrue(t.timestamp is not None)
         self.assertTrue(t.content is not None)
         self.assertTrue('myhub.com' in t.content)
+
+    def test_verify_bad_content(self):
+        t = Topic('http://httpbin.org/get')
+        bad_content = 'this is bad'
+        self.assertFalse(t.verify(bad_content))
+
+    def test_verify_good_content(self):
+        t = Topic('http://httpbin.org/get')
+        self.assertTrue(t.verify(good_atom))
 
 
 class HubTests(unittest.TestCase):

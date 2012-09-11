@@ -16,6 +16,7 @@ requires = [
     'repoze.folder',
     'zope.interface',
     'requests',
+    'feedparser',
     ]
 
 setup(name='push-hub',
