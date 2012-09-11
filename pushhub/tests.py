@@ -1,4 +1,5 @@
 import unittest
+from mock import patch, Mock
 
 from paste.util.multidict import MultiDict
 from pyramid import testing
@@ -15,6 +16,15 @@ import os
 path = os.path.abspath(os.path.dirname(__file__))
 
 good_atom = open(path + '/fixtures/example.xml', 'r').read()
+
+
+class MockResponse(object):
+    def __init__(self, content=None, headers=None):
+        self.content = content
+        self.headers = headers
+
+    def __call__(self, *args, **kwargs):
+        return self
 
 
 class BaseTest(unittest.TestCase):
@@ -316,13 +326,19 @@ class TopicTests(unittest.TestCase):
         t = Topic('http://www.google.com/')
         self.assertRaises(ValueError, t.remove_subscriber)
 
-    def test_fetching_url_content(self):
+    def test_fetching_bad_content(self):
+        t = Topic('http://httpbin.org/get')
+        self.assertRaises(ValueError, t.fetch, 'http://myhub.com/')
+        # Nothing should be changed if the fetch fails
+        self.assertTrue(t.timestamp is None)
+        self.assertTrue(t.content is None)
+
+    @patch('requests.get', new_callable=MockResponse, content=good_atom)
+    def test_fetching_good_content(self, mock):
         t = Topic('http://httpbin.org/get')
         t.fetch('http://myhub.com/')
-        # side-effects of a fetch
+        self.assertTrue('John Doe' in t.content)
         self.assertTrue(t.timestamp is not None)
-        self.assertTrue(t.content is not None)
-        self.assertTrue('myhub.com' in t.content)
 
     def test_verify_bad_content(self):
         t = Topic('http://httpbin.org/get')

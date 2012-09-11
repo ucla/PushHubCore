@@ -55,6 +55,8 @@ class Topic(Persistent):
 
         response = requests.get(self.url, headers=headers)
 
+        if not self.verify(response.content):
+            raise ValueError
         self.content = response.content
         self.timestamp = datetime.now()
 
