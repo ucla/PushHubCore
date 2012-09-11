@@ -40,6 +40,7 @@ class Topic(Persistent):
         self.url = url
         self.timestamp = None
         self.content = None
+        self.subscribers = 0
         self.last_pinged = None
         self.ping()
 
@@ -57,3 +58,15 @@ class Topic(Persistent):
     def ping(self):
         """Registers the last time a publisher pinged the hub for this topic."""
         self.last_pinged = datetime.now()
+
+    def add_subscriber(self):
+        """Increment subscriber count so reporting on content fetch is easier.
+        """
+        self.subscribers += 1
+
+    def remove_subscriber(self):
+        """Sanely remove subscribers from the count
+        """
+        if self.subscribers <= 0:
+            raise ValueError
+        self.subscribers -= 1

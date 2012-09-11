@@ -58,6 +58,7 @@ class Hub(Folder):
         if verified:
             try:
                 subscriber.topics.add(topic_url, topic)
+                topic.add_subscriber()
             except KeyError:
                 # subscription already exists
                 # this might mean an intent to renew lease
@@ -76,6 +77,7 @@ class Hub(Folder):
         if verified:
             try:
                 subscriber.topics.remove(topic_url, topic)
+                topic.remove_subscriber()
             except KeyError:
                 # unsubcribed from this topic already
                 pass
@@ -141,3 +143,8 @@ class Hub(Folder):
         """Generates a random challenge string"""
         choices = ascii_letters + digits
         return ''.join(random.choice(choices) for i in xrange(128))
+
+    def fetch_content(self):
+        """
+        Fetches the content at a topic URL.
+        """

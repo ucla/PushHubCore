@@ -295,6 +295,21 @@ class TopicTests(unittest.TestCase):
         new_time = t.last_pinged
         self.assertTrue(original_time < new_time)
 
+    def test_adding_subscriber(self):
+        t = Topic('http://www.google.com/')
+        t.add_subscriber()
+        self.assertEqual(t.subscribers, 1)
+
+    def test_removing_subscriber(self):
+        t = Topic('http://www.google.com/')
+        t.add_subscriber()
+        t.remove_subscriber()
+        self.assertEqual(t.subscribers, 0)
+
+    def test_removing_too_many_subscribers(self):
+        t = Topic('http://www.google.com/')
+        self.assertRaises(ValueError, t.remove_subscriber)
+
 
 class HubTests(unittest.TestCase):
 
