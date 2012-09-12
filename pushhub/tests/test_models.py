@@ -148,20 +148,24 @@ class HubTests(unittest.TestCase):
 
     def test_subscribe(self):
         hub = Hub()
-        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        challenge = hub.get_challenge_string()
+        with patch('requests.get', new_callable=MockResponse,
+                   content=challenge):
+            hub.subscribe('http://httpbin.org/get', 'http://www.google.com/',
+                          challenge=challenge)
         self.assertEqual(len(hub.subscribers), 1)
-        self.assertTrue('http://www.google.com/' in hub.subscribers.keys())
+        self.assertTrue('http://httpbin.org/get' in hub.subscribers.keys())
         self.assertEqual(
-            hub.subscribers['http://www.google.com/'].callback_url,
-            'http://www.google.com/'
+            hub.subscribers['http://httpbin.org/get'].callback_url,
+            'http://httpbin.org/get'
         )
 
     def test_existing_subscription(self):
         hub = Hub()
-        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
-        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
+        hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
         self.assertEqual(len(hub.subscribers), 1)
-        sub = hub.get_or_create_subscriber('http://www.google.com/')
+        sub = hub.get_or_create_subscriber('http://httpbin.org/get')
         self.assertEqual(len(sub.topics), 1)
 
     def test_unsubscribe(self):

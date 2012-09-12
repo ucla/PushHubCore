@@ -1,9 +1,11 @@
 import unittest
 
+from mock import patch
 from paste.util.multidict import MultiDict
 from pyramid import testing
 from pyramid.request import Request
 
+from .mocks import MockResponse
 from ..models import Hub
 from ..views import publish, subscribe
 
@@ -17,6 +19,7 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         testing.tearDown()
         self.root = None
+        self.challenge = None
 
     def r(self, url, headers=[], POST={}):
         if not headers:
@@ -97,6 +100,7 @@ class SubscribeTests(BaseTest):
         'hub.mode': "subscribe",
         'hub.topic': "http://www.google.com/"
     })
+    challenge = "abcdefg"
 
     def test_subscribe(self):
         request = Request.blank('/subscribe')
@@ -166,13 +170,17 @@ class SubscribeTests(BaseTest):
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.callback' in info.body)
 
-    def test_valid_callback(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_valid_callback(self, mock_get_challenge_string):
         data = self.default_data.copy()
+        mock_get_challenge_string.return_value = self.challenge
         request = self.r(
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
     def test_invalid_mode(self):

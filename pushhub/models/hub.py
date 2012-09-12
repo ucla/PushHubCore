@@ -44,7 +44,7 @@ class Hub(Folder):
         """
         pass
 
-    def subscribe(self, callback_url, topic_url):
+    def subscribe(self, callback_url, topic_url, challenge=None):
         """
         Subscribe a subscriber to a topic
 
@@ -54,7 +54,13 @@ class Hub(Folder):
         topic = self.get_or_create_topic(topic_url)
         subscriber = self.get_or_create_subscriber(callback_url)
 
-        verified = self.verify_subscription(subscriber, topic, "subscribe")
+        if not challenge:
+            challenge = self.get_challenge_string()
+
+        print challenge
+
+        verified = self.verify_subscription(subscriber, topic, "subscribe",
+                                            challenge)
         if verified:
             try:
                 subscriber.topics.add(topic_url, topic)
@@ -65,7 +71,7 @@ class Hub(Folder):
                 pass
         return verified
 
-    def unsubscribe(self, callback_url, topic_url):
+    def unsubscribe(self, callback_url, topic_url, challenge=None):
         """
         Unsubscribe a subscriber to a topic
 
@@ -73,7 +79,11 @@ class Hub(Folder):
         topic = self.get_or_create_topic(topic_url)
         subscriber = self.get_or_create_subscriber(callback_url)
 
-        verified = self.verify_subscription(subscriber, topic, "unsubscribe")
+        if not challenge:
+            challenge = self.get_challenge_string()
+
+        verified = self.verify_subscription(subscriber, topic, "unsubscribe",
+                                            challenge)
         if verified:
             try:
                 subscriber.topics.remove(topic_url, topic)
@@ -83,18 +93,19 @@ class Hub(Folder):
                 pass
         return verified
 
-    def verify_subscription(self, subscriber, topic, mode):
+    def verify_subscription(self, subscriber, topic, mode, challenge):
         """Verify that this is a real request by a subscriber.
 
         Args:
             subscriber: (Subscriber) The subscriber making the request
             topic: (Topic) The topic being subscribed to
             mode: (string) Either 'subscribe' or 'unsubscribe'
+            challenge: (string) A random string the subscriber must return
+                in the request body
 
         Returns:
             True if intent is verified, False otherwise
         """
-        challenge = self.get_challenge_string()
         qs = {
             "hub.mode": mode,
             "hub.topic": topic.url,
@@ -104,7 +115,7 @@ class Hub(Folder):
         if not r.status_code == requests.codes.ok:
             return False
 
-        if challenge not in r.text:
+        if challenge not in r.content:
             return False
 
         return True
