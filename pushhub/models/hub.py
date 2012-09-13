@@ -153,7 +153,7 @@ class Hub(Folder):
         choices = ascii_letters + digits
         return ''.join(random.choice(choices) for i in xrange(128))
 
-    def fetch_content(self, hub_url):
+    def fetch_all_content(self, hub_url):
         """
         Fetches the content at all topic URLs.
         """

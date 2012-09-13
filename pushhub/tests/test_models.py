@@ -201,7 +201,7 @@ class HubTests(unittest.TestCase):
         hub = Hub()
         hub.publish('http://httpbin.org/get')
         hub.publish('http://www.google.com/')
-        hub.fetch_content('http://myhub.com')
+        hub.fetch_all_content('http://myhub.com')
         first = hub.topics.get('http://httpbin.org/get')
         second = hub.topics.get('http://www.google.com/')
         self.assertTrue(first.timestamp is not None)
@@ -220,7 +220,7 @@ class HubTests(unittest.TestCase):
             'http://www.google.com/': MockResponse(content="adslkfhadslfhd"),
         }
         with patch('requests.get', new_callable=MultiResponse, mapping=urls):
-            hub.fetch_content('http://myhub.com')
+            hub.fetch_all_content('http://myhub.com')
         good = hub.topics.get('http://httpbin.org/get')
         bad = hub.topics.get('http://www.google.com/')
 
