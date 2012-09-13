@@ -57,8 +57,6 @@ class Hub(Folder):
         if not challenge:
             challenge = self.get_challenge_string()
 
-        print challenge
-
         verified = self.verify_subscription(subscriber, topic, "subscribe",
                                             challenge)
         if verified:

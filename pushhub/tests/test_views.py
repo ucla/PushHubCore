@@ -94,8 +94,6 @@ class PublishTests(BaseTest):
 class SubscribeTests(BaseTest):
     default_data = MultiDict({
         'hub.verify': 'sync',
-        # returns GET data so it will return the
-        # hubs challenge string during verification
         'hub.callback': 'http://httpbin.org/get',
         'hub.mode': "subscribe",
         'hub.topic': "http://www.google.com/"
@@ -132,8 +130,10 @@ class SubscribeTests(BaseTest):
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
         self.assertTrue("hub.verify" in info.body)
 
-    def test_multiple_verify_types_one_valid(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_multiple_verify_types_one_valid(self, mock_get_challenge_string):
         data = self.default_data.copy()
+        mock_get_challenge_string.return_value = self.challenge
         del data["hub.verify"]
         data.add('hub.verify', 'bogus')
         data.add('hub.verify', 'sync')
@@ -141,7 +141,9 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
     def test_multiple_invalid_verify_types(self):
@@ -195,22 +197,30 @@ class SubscribeTests(BaseTest):
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.mode' in info.body)
 
-    def test_valid_mode(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_valid_mode(self, mock_get_challenge_string):
         data = self.default_data.copy()
+        mock_get_challenge_string.return_value = self.challenge
         request = self.r(
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
-    def test_valid_topic(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_valid_topic(self, mock_get_challenge_string):
         data = self.default_data.copy()
+        mock_get_challenge_string.return_value = self.challenge
         request = self.r(
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            info = subscribe(request)
         self.assertEqual(info.status_code, 204)
 
     def test_invalid_topic(self):
@@ -233,5 +243,6 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        with patch('requests.get', new_callable=MockResponse, status_code=404):
+            info = subscribe(request)
         self.assertEqual(info.status_code, 409)

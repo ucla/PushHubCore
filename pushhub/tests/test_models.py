@@ -113,6 +113,8 @@ class TopicTests(unittest.TestCase):
 
 class HubTests(unittest.TestCase):
 
+    challenge = "abcdefg"
+
     def setUp(self):
         pass
 
@@ -124,7 +126,8 @@ class HubTests(unittest.TestCase):
         self.assertEqual(hub.topics, None)
         self.assertEqual(hub.subscribers, None)
 
-    def test_publish_topic(self):
+    @patch('requests.get', new_callable=MockResponse, content=good_atom)
+    def test_publish_topic(self, mock):
         hub = Hub()
         hub.publish('http://www.google.com/')
         self.assertEqual(len(hub.topics), 1)
@@ -134,7 +137,8 @@ class HubTests(unittest.TestCase):
             'http://www.google.com/'
         )
 
-    def test_publish_existing_topic(self):
+    @patch('requests.get', new_callable=MockResponse, content=good_atom)
+    def test_publish_existing_topic(self, mock):
         """
         Existing topics should have their 'pinged' time updated.
         """
@@ -146,13 +150,13 @@ class HubTests(unittest.TestCase):
         self.assertEqual(len(hub.topics), 1)
         self.assertTrue(second_time > first_time)
 
-    def test_subscribe(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_subscribe(self, mock_get_challenge_string):
         hub = Hub()
-        challenge = hub.get_challenge_string()
+        mock_get_challenge_string.return_value = self.challenge
         with patch('requests.get', new_callable=MockResponse,
-                   content=challenge):
-            hub.subscribe('http://httpbin.org/get', 'http://www.google.com/',
-                          challenge=challenge)
+                   content=self.challenge, status_code=200):
+            hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
         self.assertEqual(len(hub.subscribers), 1)
         self.assertTrue('http://httpbin.org/get' in hub.subscribers.keys())
         self.assertEqual(
@@ -160,24 +164,36 @@ class HubTests(unittest.TestCase):
             'http://httpbin.org/get'
         )
 
-    def test_existing_subscription(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_existing_subscription(self, mock_get_challenge_string):
         hub = Hub()
-        hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
-        hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
+        mock_get_challenge_string.return_value = self.challenge
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
+            hub.subscribe('http://httpbin.org/get', 'http://www.google.com/')
         self.assertEqual(len(hub.subscribers), 1)
         sub = hub.get_or_create_subscriber('http://httpbin.org/get')
         self.assertEqual(len(sub.topics), 1)
 
-    def test_unsubscribe(self):
+    @patch.object(Hub, 'get_challenge_string')
+    def test_unsubscribe(self, mock_get_challenge_string):
         hub = Hub()
-        hub.subscribe('http://www.google.com/', 'http://www.google.com/')
+        mock_get_challenge_string.return_value = self.challenge
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            hub.subscribe('http://www.google.com/', 'http://www.google.com/')
         sub = hub.get_or_create_subscriber('http://www.google.com/')
         self.assertEqual(len(sub.topics), 1)
         self.assertTrue('http://www.google.com/' in sub.topics.keys())
-        hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
         self.assertEqual(len(sub.topics), 0)
         # test repeated unsubscribe
-        hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
+        with patch('requests.get', new_callable=MockResponse,
+                   content=self.challenge, status_code=200):
+            hub.unsubscribe('http://www.google.com/', 'http://www.google.com/')
         self.assertEqual(len(sub.topics), 0)
 
     @patch('requests.get', new_callable=MockResponse, content=good_atom)
