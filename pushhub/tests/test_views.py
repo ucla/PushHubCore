@@ -5,7 +5,7 @@ from paste.util.multidict import MultiDict
 from pyramid import testing
 from pyramid.request import Request
 
-from .mocks import MockResponse
+from .mocks import MockResponse, MultiResponse, good_atom
 from ..models import Hub
 from ..views import publish, subscribe
 
@@ -89,6 +89,28 @@ class PublishTests(BaseTest):
         request = self.r('/publish', self.valid_headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 204)
+
+    def test_publish_fetches_topic_content(self):
+        data = MultiDict({'hub.mode': 'publish'})
+        data.add('hub.url', 'http://www.example.com/')
+        data.add('hub.url', 'http://www.site.com/')
+        request = self.r('/publish', self.valid_headers, POST=data)
+        hub = request.root
+        urls = {
+            'http://www.example.com/': MockResponse(content=good_atom),
+            'http://www.site.com/': MockResponse(content=good_atom)
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            info = publish(request)
+
+        first = hub.topics.get('http://www.example.com/')
+        second = hub.topics.get('http://www.site.com/')
+
+        self.assertEqual(info.status_code, 204)
+        self.assertTrue(first.timestamp is not None)
+        self.assertTrue('John Doe' in first.content)
+        self.assertTrue(second.timestamp is not None)
+        self.assertTrue('John Doe' in second.content)
 
 
 class SubscribeTests(BaseTest):
