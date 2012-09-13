@@ -104,11 +104,20 @@ class TopicTests(unittest.TestCase):
     def test_verify_bad_content(self):
         t = Topic('http://httpbin.org/get')
         bad_content = 'this is bad'
-        self.assertFalse(t.verify(bad_content))
+        self.assertTrue(t.parse(bad_content).bozo)
 
     def test_verify_good_content(self):
         t = Topic('http://httpbin.org/get')
-        self.assertTrue(t.verify(good_atom))
+        self.assertFalse(t.parse(good_atom).bozo)
+
+    def test_parse_good_content(self):
+        """
+        Basic sanity test for parsing.
+        """
+        t = Topic('http://httpbin.org/get')
+        parsed = t.parse(good_atom)
+        self.assertEqual(parsed['channel']['title'], 'Example Feed')
+        self.assertEqual(len(parsed['items']), 4)
 
 
 class HubTests(unittest.TestCase):

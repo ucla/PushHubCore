@@ -55,20 +55,19 @@ class Topic(Persistent):
 
         response = requests.get(self.url, headers=headers)
 
-        if not self.verify(response.content):
+        parsed = self.parse(response.content)
+
+        if parsed.bozo:
             # Should probably set a flag or log something here, too.
             raise ValueError
         self.content = response.content
         self.timestamp = datetime.now()
 
-    def verify(self, content):
-        """Verifies that the URL provides valid Atom/RSS responses."""
+    def parse(self, content):
+        """Parses a feed into a Python object"""
         parsed = parse(content)
 
-        if parsed.bozo:
-            return False
-        else:
-            return True
+        return parsed
 
     def ping(self):
         """Registers the last time a publisher pinged the hub for this topic."""
