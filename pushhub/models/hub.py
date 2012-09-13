@@ -162,3 +162,19 @@ class Hub(Folder):
                 topic.fetch(hub_url)
             except ValueError:
                 continue
+
+    def fetch_content(self, topic_urls, hub_url):
+        """
+        Takes a list of topic urls and attempts to fetch their content.
+        """
+
+        for topic_url in topic_urls:
+            topic = self.topics.get(topic_url, None)
+
+            if not topic:
+                continue
+
+            try:
+                topic.fetch(hub_url)
+            except ValueError:
+                continue

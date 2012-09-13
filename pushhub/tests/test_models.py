@@ -230,6 +230,93 @@ class HubTests(unittest.TestCase):
         self.assertTrue(bad.timestamp is None)
         self.assertTrue(bad.content is None)
 
+    def test_fetch_some_content(self):
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        hub.publish('http://www.google.com/')
+        urls = {
+            'http://httpbin.org/get': MockResponse(content=good_atom),
+            'http://www.google.com/': MockResponse(content=good_atom),
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            hub.fetch_content([
+                'http://httpbin.org/get',
+                'http://www.google.com/'
+            ], 'http://myhub.com')
+
+        first = hub.topics.get('http://httpbin.org/get')
+        second = hub.topics.get('http://www.google.com/')
+        self.assertTrue(first.timestamp is not None)
+        self.assertTrue('John Doe' in first.content)
+        self.assertTrue(second.timestamp is not None)
+        self.assertTrue('John Doe' in second.content)
+
+    def test_fetch_some_failing_content(self):
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        hub.publish('http://www.google.com/')
+        urls = {
+            'http://httpbin.org/get': MockResponse(content=good_atom),
+            'http://www.google.com/': MockResponse(content="adslkfhadslfhd"),
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            hub.fetch_content([
+                'http://httpbin.org/get',
+                'http://www.google.com/'
+            ], 'http://myhub.com')
+
+        good = hub.topics.get('http://httpbin.org/get')
+        bad = hub.topics.get('http://www.google.com/')
+
+        self.assertTrue(good.timestamp is not None)
+        self.assertTrue('John Doe' in good.content)
+
+        self.assertTrue(bad.timestamp is None)
+        self.assertTrue(bad.content is None)
+
+    def test_fetch_some_content_no_response(self):
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        hub.publish('http://www.google.com/')
+        urls = {
+            'http://httpbin.org/get': MockResponse(content=good_atom),
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            hub.fetch_content([
+                'http://httpbin.org/get',
+                'http://www.google.com/'
+            ], 'http://myhub.com')
+
+        good = hub.topics.get('http://httpbin.org/get')
+        bad = hub.topics.get('http://www.google.com/')
+
+        self.assertTrue(good.timestamp is not None)
+        self.assertTrue('John Doe' in good.content)
+
+        self.assertTrue(bad.timestamp is None)
+        self.assertTrue(bad.content is None)
+
+    def test_fetch_some_unpublished_content(self):
+        hub = Hub()
+        hub.publish('http://httpbin.org/get')
+        urls = {
+            'http://httpbin.org/get': MockResponse(content=good_atom),
+            'http://www.google.com/': MockResponse(content="adslkfhadslfhd"),
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            hub.fetch_content([
+                'http://httpbin.org/get',
+                'http://www.google.com/'
+            ], 'http://myhub.com')
+
+        good = hub.topics.get('http://httpbin.org/get')
+        bad = hub.topics.get('http://www.google.com/')
+
+        self.assertTrue(good.timestamp is not None)
+        self.assertTrue('John Doe' in good.content)
+
+        self.assertTrue(bad is None)
+
 
 class UtilTests(unittest.TestCase):
 
