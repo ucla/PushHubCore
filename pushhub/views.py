@@ -35,7 +35,8 @@ def publish(request):
             bad_data = True
             error_msg = "Malformed URL: %s" % topic_url
 
-    hub.fetch_content(topic_urls, request.application_url)
+    if not bad_data:
+        hub.fetch_content(topic_urls, request.application_url)
 
     if bad_data and error_msg:
         return exception_response(400,

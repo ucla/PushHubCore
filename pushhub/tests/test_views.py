@@ -31,16 +31,23 @@ class BaseTest(unittest.TestCase):
         return req
 
 
+urls = {
+    'http://www.example.com/': MockResponse(content=good_atom),
+    'http://www.site.com/': MockResponse(content=good_atom)
+}
+
+
+@patch('requests.get', new_callable=MultiResponse, mapping=urls)
 class PublishTests(BaseTest):
 
     valid_headers = [("Content-Type", "application/x-www-form-urlencoded")]
 
-    def test_publish(self):
+    def test_publish(self, mock):
         request = Request.blank('/publish')
         info = publish(request)
         self.assertEqual(info.status_code, 405)
 
-    def test_publish_wrong_type(self):
+    def test_publish_wrong_type(self, mock):
         """Post using an incorrect Content-Type"""
         headers = [('Content-Type', 'application/xml')]
         request = Request.blank('/publish',
@@ -49,20 +56,20 @@ class PublishTests(BaseTest):
         info = publish(request)
         self.assertEqual(info.status_code, 406)
 
-    def test_publish_content_type_without_mode(self):
+    def test_publish_content_type_without_mode(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         request = self.r('/publish', headers, POST={})
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
-    def test_publish_wrong_method(self):
+    def test_publish_wrong_method(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         request = Request.blank('', headers)
         info = publish(request)
         self.assertEqual(info.status_code, 405)
         self.assertEqual(info.headers['Allow'], 'POST')
 
-    def test_publish_content_type_with_correct_mode(self):
+    def test_publish_content_type_with_correct_mode(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'publish', 'hub.url': 'http://www.google.com/'}
         request = self.r('/publish', headers, POST=data)
@@ -70,44 +77,34 @@ class PublishTests(BaseTest):
             info = publish(request)
         self.assertEqual(info.status_code, 204)
 
-    def test_publish_content_type_with_incorrect_mode(self):
+    def test_publish_content_type_with_incorrect_mode(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'bad'}
         request = self.r('/publish', headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
-    def test_publish_with_no_urls(self):
+    def test_publish_with_no_urls(self, mock):
         data = {'hub.mode': 'publish'}
         request = self.r('/publish', self.valid_headers, POST=data)
         info = publish(request)
         self.assertEqual(info.status_code, 400)
 
-    def test_publish_with_multiple_urls(self):
+    def test_publish_with_multiple_urls(self, mock):
         data = MultiDict({'hub.mode': 'publish'})
         data.add('hub.url', 'http://www.example.com/')
         data.add('hub.url', 'http://www.site.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
-        urls = {
-            'http://www.example.com/': MockResponse(content=good_atom),
-            'http://www.site.com/': MockResponse(content=good_atom)
-        }
-        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
-            info = publish(request)
+        info = publish(request)
         self.assertEqual(info.status_code, 204)
 
-    def test_publish_fetches_topic_content(self):
+    def test_publish_fetches_topic_content(self, mock):
         data = MultiDict({'hub.mode': 'publish'})
         data.add('hub.url', 'http://www.example.com/')
         data.add('hub.url', 'http://www.site.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
         hub = request.root
-        urls = {
-            'http://www.example.com/': MockResponse(content=good_atom),
-            'http://www.site.com/': MockResponse(content=good_atom)
-        }
-        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
-            info = publish(request)
+        info = publish(request)
 
         first = hub.topics.get('http://www.example.com/')
         second = hub.topics.get('http://www.site.com/')
