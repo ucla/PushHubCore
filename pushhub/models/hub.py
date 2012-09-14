@@ -44,7 +44,7 @@ class Hub(Folder):
         """
         pass
 
-    def subscribe(self, callback_url, topic_url, challenge=None):
+    def subscribe(self, callback_url, topic_url):
         """
         Subscribe a subscriber to a topic
 
@@ -54,11 +54,7 @@ class Hub(Folder):
         topic = self.get_or_create_topic(topic_url)
         subscriber = self.get_or_create_subscriber(callback_url)
 
-        if not challenge:
-            challenge = self.get_challenge_string()
-
-        verified = self.verify_subscription(subscriber, topic, "subscribe",
-                                            challenge)
+        verified = self.verify_subscription(subscriber, topic, "subscribe")
         if verified:
             try:
                 subscriber.topics.add(topic_url, topic)
@@ -69,7 +65,7 @@ class Hub(Folder):
                 pass
         return verified
 
-    def unsubscribe(self, callback_url, topic_url, challenge=None):
+    def unsubscribe(self, callback_url, topic_url):
         """
         Unsubscribe a subscriber to a topic
 
@@ -77,11 +73,7 @@ class Hub(Folder):
         topic = self.get_or_create_topic(topic_url)
         subscriber = self.get_or_create_subscriber(callback_url)
 
-        if not challenge:
-            challenge = self.get_challenge_string()
-
-        verified = self.verify_subscription(subscriber, topic, "unsubscribe",
-                                            challenge)
+        verified = self.verify_subscription(subscriber, topic, "unsubscribe")
         if verified:
             try:
                 subscriber.topics.remove(topic_url, topic)
@@ -91,7 +83,7 @@ class Hub(Folder):
                 pass
         return verified
 
-    def verify_subscription(self, subscriber, topic, mode, challenge):
+    def verify_subscription(self, subscriber, topic, mode):
         """Verify that this is a real request by a subscriber.
 
         Args:
@@ -104,6 +96,7 @@ class Hub(Folder):
         Returns:
             True if intent is verified, False otherwise
         """
+        challenge = self.get_challenge_string()
         qs = {
             "hub.mode": mode,
             "hub.topic": topic.url,
