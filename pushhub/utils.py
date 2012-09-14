@@ -79,3 +79,67 @@ def is_valid_url(url):
         return False
 
     return True
+
+
+class FeedComparator(object):
+    def __init__(self, new_feed, past_feed):
+        """
+        Provides methods for comparing 2 Atom/RSS feeds.
+
+        Arguments:
+            * new_feed: The parsed feed of the newer content
+            * past_feed: The parsed feed of an older version of the content.
+        """
+        self.new_feed = new_feed
+        self.past_feed = past_feed
+
+    def new_entries(self):
+        """
+        Finds new entries in the feed and returns them.
+
+        New entries are determined by comparing the set of IDs
+        found in each feed.
+        """
+        new = []
+        new_entry_ids = [e.id for e in self.new_feed.entries]
+        past_entry_ids = [e.id for e in self.past_feed.entries]
+
+        for entry in self.new_feed.entries:
+            if entry.id in new_entry_ids and entry.id not in past_entry_ids:
+                new.append(entry)
+
+        return new
+
+    def updated_entries(self):
+        """
+        Finds existing updated entries and returns them.
+
+        Entries are differentiated by their ID, and are considered updated
+        if the parsed date/time of the new entry is more recent than the
+        old entry's.
+        """
+
+        updated = []
+        past_ids = [e.id for e in self.past_feed.entries]
+        for entry in self.new_feed.entries:
+            if entry.id not in past_ids:
+                continue
+
+            idx = past_ids.index(entry.id)
+            past_entry = self.past_feed.entries[idx]
+            if entry.updated_parsed > past_entry.updated_parsed:
+                updated.append(entry)
+        return updated
+
+    def removed_entries(self):
+        removed = []
+        new_ids = [e.id for e in self.new_feed.entries]
+        for entry in self.past_feed.entries:
+            if entry.id in new_ids:
+                continue
+
+            removed.append(entry)
+        return removed
+
+    def changed_metadata(self):
+        pass

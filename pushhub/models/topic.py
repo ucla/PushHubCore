@@ -60,6 +60,7 @@ class Topic(Persistent):
         if parsed.bozo:
             # Should probably set a flag or log something here, too.
             raise ValueError
+        parsed_old = self.parse(self.content)
         self.content = response.content
         self.timestamp = datetime.now()
 

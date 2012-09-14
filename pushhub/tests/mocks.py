@@ -8,6 +8,7 @@ from os.path import abspath, dirname, join
 path = abspath(dirname(__file__))
 
 good_atom = open(join(path, 'fixtures', 'example.xml'), 'r').read()
+updated_atom = open(join(path, 'fixtures', 'updated.xml'), 'r').read()
 
 
 class MockResponse(object):
