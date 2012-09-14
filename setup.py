@@ -17,6 +17,7 @@ requires = [
     'zope.interface',
     'requests',
     'feedparser',
+    'webhelpers',
     ]
 
 setup(name='push-hub',

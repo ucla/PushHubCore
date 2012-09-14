@@ -159,6 +159,19 @@ class TopicNewEntriesTests(TestCase):
         feed = new_feed['feed']
         self.assertEqual(feed['title'], 'Updated Feed')
 
+    def test_parsed_output(self):
+        parsed_feed = self.topic.assemble_newest_entries(
+            self.new_parsed,
+            self.old_parsed
+        )
+        output_str = self.topic.generate_feed(parsed_feed)
+        self.assertTrue('Nermal' not in output_str)
+        self.assertTrue('Heathcliff' in output_str)
+        self.assertTrue('Updated Feed' in output_str)
+
+    def test_no_input(self):
+        parsed_feed = None
+        self.assertRaises(TypeError, self.topic.generate_feed, parsed_feed)
 
 
 class HubTests(TestCase):

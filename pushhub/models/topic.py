@@ -13,6 +13,7 @@ from persistent import Persistent
 import requests
 from repoze.folder import Folder
 from zope.interface import Interface, implements
+from webhelpers import feedgenerator
 
 from ..utils import FeedComparator
 
@@ -101,4 +102,22 @@ class Topic(Persistent):
         metadata['entries'] = all_entries
 
         return metadata
+
+    def generate_feed(self, parsed_feed):
+        new_feed = feedgenerator.Atom1Feed(
+            title = parsed_feed['feed']['title'],
+            link = parsed_feed['feed']['link'],
+            description = parsed_feed['feed']['link'],
+            author = parsed_feed['feed']['author']
+        )
+        for entry in parsed_feed.entries:
+            new_feed.add_item(
+                entry.pop('title'),
+                entry.pop('link'),
+                entry.pop('description', ''),
+                **entry
+            )
+
+        return new_feed.writeString(parsed_feed['encoding'])
+
 
