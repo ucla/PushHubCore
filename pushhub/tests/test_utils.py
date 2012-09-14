@@ -47,5 +47,8 @@ class TestFeedRemoved(BaseComparatorTestCase):
 
     def test_removed_entries_length(self):
         removed_entries = self.compare.removed_entries()
-        print removed_entries
         self.assertEqual(len(removed_entries), 1)
+
+    def test_removed_entry_content(self):
+        removed_entries = self.compare.removed_entries()
+        self.assertTrue(removed_entries[0]['title'], 'Nermal')
