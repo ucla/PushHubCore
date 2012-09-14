@@ -66,7 +66,8 @@ class PublishTests(BaseTest):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'publish', 'hub.url': 'http://www.google.com/'}
         request = self.r('/publish', headers, POST=data)
-        info = publish(request)
+        with patch('requests.get', new_callable=MockResponse, status_code=204):
+            info = publish(request)
         self.assertEqual(info.status_code, 204)
 
     def test_publish_content_type_with_incorrect_mode(self):
@@ -87,7 +88,12 @@ class PublishTests(BaseTest):
         data.add('hub.url', 'http://www.example.com/')
         data.add('hub.url', 'http://www.site.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
-        info = publish(request)
+        urls = {
+            'http://www.example.com/': MockResponse(content=good_atom),
+            'http://www.site.com/': MockResponse(content=good_atom)
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            info = publish(request)
         self.assertEqual(info.status_code, 204)
 
     def test_publish_fetches_topic_content(self):
