@@ -52,3 +52,16 @@ class TestFeedRemoved(BaseComparatorTestCase):
     def test_removed_entry_content(self):
         removed_entries = self.compare.removed_entries()
         self.assertTrue(removed_entries[0]['title'], 'Nermal')
+
+
+class TestFeedMetaDataChanged(BaseComparatorTestCase):
+
+    def test_feed_tag_changed(self):
+        changed_metadata= self.compare.changed_metadata()
+        self.assertTrue(len(changed_metadata), 1)
+
+    def test_feed_tag_title_changed(self):
+        changed_metadata = self.compare.changed_metadata()
+        self.assertEqual(changed_metadata['feed']['title'], 'Updated Feed')
+
+

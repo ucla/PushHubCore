@@ -1,6 +1,7 @@
 """
 Various utility functions.
 """
+from copy import deepcopy
 import urllib
 import urlparse
 
@@ -142,4 +143,27 @@ class FeedComparator(object):
         return removed
 
     def changed_metadata(self):
-        pass
+        """
+        Detects changes to the feed metadata.
+
+        If *any* of the attributes have changed, we use them all.
+        """
+        changed = False
+
+        past_feed = self.past_feed['feed']
+        new_feed = self.new_feed['feed']
+
+        if past_feed['title'] != new_feed['title']:
+            changed = True
+
+        if past_feed['author'] != new_feed['author']:
+            changed = True
+
+        if changed:
+            new_metadata = deepcopy(self.new_feed)
+            # Get rid of the entries so we can rebuild it.
+            del new_metadata['entries']
+            return new_metadata
+
+        return None
+
