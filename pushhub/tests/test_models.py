@@ -1,15 +1,17 @@
-import unittest
+from unittest import TestCase
 from mock import patch
+
+from feedparser import parse
 
 from ..models.hub import Hub
 from ..models.topic import Topic
 from ..models.subscriber import Subscriber
 from ..utils import is_valid_url
 
-from .mocks import good_atom, MockResponse, MultiResponse
+from .mocks import good_atom, MockResponse, MultiResponse, updated_atom
 
 
-class SubscriberTests(unittest.TestCase):
+class SubscriberTests(TestCase):
 
     def setUp(self):
         pass
@@ -40,7 +42,7 @@ class SubscriberTests(unittest.TestCase):
         )
 
 
-class TopicTests(unittest.TestCase):
+class TopicTests(TestCase):
 
     def setUp(self):
         pass
@@ -120,7 +122,46 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(len(parsed['items']), 4)
 
 
-class HubTests(unittest.TestCase):
+class TopicNewEntriesTests(TestCase):
+
+    old_parsed = parse(good_atom)
+    new_parsed = parse(updated_atom)
+
+    def setUp(self):
+        self.topic = Topic('http://www.google.com/')
+
+    def tearDown(self):
+        self.topic = None
+
+    def test_assemble_newest_entries_returns(self):
+        new_feed = self.topic.assemble_newest_entries(
+                self.new_parsed,
+                self.old_parsed
+        )
+        self.assertTrue(new_feed is not None)
+        self.assertTrue('entries' in new_feed)
+
+    def test_assembled_entries_are_correct(self):
+        new_feed = self.topic.assemble_newest_entries(
+                self.new_parsed,
+                self.old_parsed
+        )
+        entries = new_feed['entries']
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0].title, 'Colby Nolan')
+        self.assertEqual(entries[1].title, 'Heathcliff')
+
+    def test_assembled_entries_metadata(self):
+        new_feed = self.topic.assemble_newest_entries(
+            self.new_parsed,
+            self.old_parsed
+        )
+        feed = new_feed['feed']
+        self.assertEqual(feed['title'], 'Updated Feed')
+
+
+
+class HubTests(TestCase):
 
     challenge = "abcdefg"
 
@@ -327,7 +368,7 @@ class HubTests(unittest.TestCase):
         self.assertTrue(bad is None)
 
 
-class UtilTests(unittest.TestCase):
+class UtilTests(TestCase):
 
     def setUp(self):
         pass

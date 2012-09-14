@@ -57,11 +57,10 @@ class TestFeedRemoved(BaseComparatorTestCase):
 class TestFeedMetaDataChanged(BaseComparatorTestCase):
 
     def test_feed_tag_changed(self):
-        changed_metadata= self.compare.changed_metadata()
-        self.assertTrue(len(changed_metadata), 1)
+        changed_metadata = self.compare.changed_metadata()
+        self.assertEqual(len(changed_metadata), 5)
+        self.assertRaises(AttributeError, getattr, changed_metadata, 'entries')
 
     def test_feed_tag_title_changed(self):
         changed_metadata = self.compare.changed_metadata()
         self.assertEqual(changed_metadata['feed']['title'], 'Updated Feed')
-
-

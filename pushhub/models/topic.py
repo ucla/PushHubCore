@@ -14,6 +14,8 @@ import requests
 from repoze.folder import Folder
 from zope.interface import Interface, implements
 
+from ..utils import FeedComparator
+
 
 class Topics(Folder):
     title = u"Topics"
@@ -61,6 +63,7 @@ class Topic(Persistent):
             # Should probably set a flag or log something here, too.
             raise ValueError
         parsed_old = self.parse(self.content)
+
         self.content = response.content
         self.timestamp = datetime.now()
 
@@ -85,3 +88,17 @@ class Topic(Persistent):
         if self.subscribers <= 0:
             raise ValueError
         self.subscribers -= 1
+
+    def assemble_newest_entries(self, parsed, parsed_old):
+        compare = FeedComparator(parsed, parsed_old)
+        new_entries = compare.new_entries()
+        updated_entries = compare.updated_entries()
+        metadata = compare.changed_metadata()
+
+        all_entries = new_entries + updated_entries
+        all_entries.sort(reverse=True, key=lambda entry: entry.updated_parsed)
+
+        metadata['entries'] = all_entries
+
+        return metadata
+
