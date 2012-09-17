@@ -118,6 +118,10 @@ class TopicTests(TestCase):
         t = Topic('http://httpbin.org/get')
         self.assertFalse(t.parse(good_atom).bozo)
 
+    def test_parse_none(self):
+        t = Topic('http://httpbin.org/get')
+        self.assertEqual(t.parse(None), None)
+
     def test_parse_good_content(self):
         """
         Basic sanity test for parsing.
@@ -180,6 +184,18 @@ class TopicNewEntriesTests(TestCase):
     def test_no_input(self):
         parsed_feed = None
         self.assertRaises(TypeError, self.topic.generate_feed, parsed_feed)
+
+    def test_empty_input(self):
+        parsed_feed = self.topic.assemble_newest_entries(
+            None,
+            self.old_parsed
+        )
+        self.assertTrue(parsed_feed is None)
+        parsed_feed = self.topic.assemble_newest_entries(
+            self.new_parsed,
+            None,
+        )
+        self.assertTrue(parsed_feed is None)
 
 
 class HubTests(TestCase):

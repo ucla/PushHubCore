@@ -46,7 +46,7 @@ class Topic(Persistent):
         self.timestamp = None
         self.content_type = ''
         self.content = None
-        self.updated = False
+        self.changed = False
         self.subscribers = Folder()
         self.subscriber_count = 0
         self.last_pinged = None
@@ -64,21 +64,30 @@ class Topic(Persistent):
 
         parsed = self.parse(response.content)
 
-        if parsed.bozo:
+        if not parsed or parsed.bozo:
             # Should probably set a flag or log something here, too.
             raise ValueError
 
-        if self.content:
+        if not self.content:
+            newest_entries = parsed
+            self.changed = True
+        else:
             parsed_old = self.parse(self.content)
+            newest_entries = self.assemble_newest_entries(parsed, parsed_old)
 
         if not self.content_type:
             self.content_type = parsed.version
+
+        if self.changed:
+            self.content = self.generate_feed(newest_entries)
 
         self.content = response.content
         self.timestamp = datetime.now()
 
     def parse(self, content):
         """Parses a feed into a Python object"""
+        if not content:
+            return None
         parsed = parse(content)
 
         return parsed
@@ -102,6 +111,8 @@ class Topic(Persistent):
         self.subscriber_count -= 1
 
     def assemble_newest_entries(self, parsed, parsed_old):
+        if not parsed or not parsed_old:
+            return None
         compare = FeedComparator(parsed, parsed_old)
         new_entries = compare.new_entries()
         updated_entries = compare.updated_entries()
