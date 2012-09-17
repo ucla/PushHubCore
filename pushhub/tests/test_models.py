@@ -76,18 +76,20 @@ class TopicTests(TestCase):
 
     def test_adding_subscriber(self):
         t = Topic('http://www.google.com/')
-        t.add_subscriber()
-        self.assertEqual(t.subscribers, 1)
+        t.add_subscriber(Subscriber('http://httbin.org.get'))
+        self.assertEqual(t.subscriber_count, 1)
 
     def test_removing_subscriber(self):
         t = Topic('http://www.google.com/')
-        t.add_subscriber()
-        t.remove_subscriber()
-        self.assertEqual(t.subscribers, 0)
+        s = Subscriber('http://httpbin.org/get')
+        t.add_subscriber(s)
+        t.remove_subscriber(s)
+        self.assertEqual(t.subscriber_count, 0)
 
-    def test_removing_too_many_subscribers(self):
+    def test_removing_non_existing_subscribers(self):
         t = Topic('http://www.google.com/')
-        self.assertRaises(ValueError, t.remove_subscriber)
+        s = Subscriber('http://httpbin.org/get')
+        self.assertRaises(KeyError, t.remove_subscriber, s)
 
     def test_fetching_bad_content(self):
         t = Topic('http://httpbin.org/get')
@@ -379,6 +381,11 @@ class HubTests(TestCase):
         self.assertTrue('John Doe' in good.content)
 
         self.assertTrue(bad is None)
+
+    def test_notify_subscribers(self):
+        t = Topic('http://httpbin.org/get')
+        s = Subscriber('http://www.google.com/')
+        t.add_subscriber(s)
 
 
 class UtilTests(TestCase):

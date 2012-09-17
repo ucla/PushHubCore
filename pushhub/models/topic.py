@@ -45,14 +45,16 @@ class Topic(Persistent):
         self.url = url
         self.timestamp = None
         self.content = None
-        self.subscribers = 0
+        self.subscribers = Folder()
+        self.subscriber_count = 0
         self.last_pinged = None
         self.ping()
 
     def fetch(self, hub_url):
         """Fetches the content from the publisher's provided URL"""
 
-        user_agent = "PuSH Hub (+%s; %s)" % (hub_url, self.subscribers)
+        user_agent = "PuSH Hub (+%s; %s)" % (hub_url, self.subscriber_count)
+
 
         headers = {'User-Agent': user_agent}
 
@@ -78,17 +80,19 @@ class Topic(Persistent):
         """Registers the last time a publisher pinged the hub for this topic."""
         self.last_pinged = datetime.now()
 
-    def add_subscriber(self):
+    def add_subscriber(self, subscriber):
         """Increment subscriber count so reporting on content fetch is easier.
         """
-        self.subscribers += 1
+        self.subscriber_count += 1
+        self.subscribers.add(subscriber.callback_url, subscriber)
 
-    def remove_subscriber(self):
+    def remove_subscriber(self, subscriber):
         """Sanely remove subscribers from the count
         """
-        if self.subscribers <= 0:
+        self.subscribers.remove(subscriber.callback_url)
+        if self.subscriber_count <= 0:
             raise ValueError
-        self.subscribers -= 1
+        self.subscriber_count -= 1
 
     def assemble_newest_entries(self, parsed, parsed_old):
         compare = FeedComparator(parsed, parsed_old)

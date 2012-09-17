@@ -58,7 +58,7 @@ class Hub(Folder):
         if verified:
             try:
                 subscriber.topics.add(topic_url, topic)
-                topic.add_subscriber()
+                topic.add_subscriber(subscriber)
             except KeyError:
                 # subscription already exists
                 # this might mean an intent to renew lease
@@ -77,7 +77,7 @@ class Hub(Folder):
         if verified:
             try:
                 subscriber.topics.remove(topic_url, topic)
-                topic.remove_subscriber()
+                topic.remove_subscriber(subscriber)
             except KeyError:
                 # unsubcribed from this topic already
                 pass
