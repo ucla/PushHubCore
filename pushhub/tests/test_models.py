@@ -76,8 +76,10 @@ class TopicTests(TestCase):
 
     def test_adding_subscriber(self):
         t = Topic('http://www.google.com/')
-        t.add_subscriber(Subscriber('http://httbin.org.get'))
+        s = Subscriber('http://httpbin.org/get')
+        t.add_subscriber(s)
         self.assertEqual(t.subscriber_count, 1)
+        self.assertEqual(t.subscribers.get('http://httpbin.org/get'), s)
 
     def test_removing_subscriber(self):
         t = Topic('http://www.google.com/')
