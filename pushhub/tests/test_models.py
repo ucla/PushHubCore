@@ -99,6 +99,7 @@ class TopicTests(TestCase):
         # Nothing should be changed if the fetch fails
         self.assertTrue(t.timestamp is None)
         self.assertTrue(t.content is None)
+        self.assertEqual(t.content_type, '')
 
     @patch('requests.get', new_callable=MockResponse, content=good_atom)
     def test_fetching_good_content(self, mock):
@@ -106,6 +107,7 @@ class TopicTests(TestCase):
         t.fetch('http://myhub.com/')
         self.assertTrue('John Doe' in t.content)
         self.assertTrue(t.timestamp is not None)
+        self.assertTrue('atom' in t.content_type)
 
     def test_verify_bad_content(self):
         t = Topic('http://httpbin.org/get')
@@ -144,6 +146,7 @@ class TopicNewEntriesTests(TestCase):
         )
         self.assertTrue(new_feed is not None)
         self.assertTrue('entries' in new_feed)
+        self.assertTrue(self.topic.changed)
 
     def test_assembled_entries_are_correct(self):
         new_feed = self.topic.assemble_newest_entries(
@@ -162,6 +165,7 @@ class TopicNewEntriesTests(TestCase):
         )
         feed = new_feed['feed']
         self.assertEqual(feed['title'], 'Updated Feed')
+        self.assertTrue(self.topic.changed)
 
     def test_parsed_output(self):
         parsed_feed = self.topic.assemble_newest_entries(

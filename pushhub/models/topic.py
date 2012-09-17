@@ -44,7 +44,9 @@ class Topic(Persistent):
 
         self.url = url
         self.timestamp = None
+        self.content_type = ''
         self.content = None
+        self.updated = False
         self.subscribers = Folder()
         self.subscriber_count = 0
         self.last_pinged = None
@@ -65,7 +67,12 @@ class Topic(Persistent):
         if parsed.bozo:
             # Should probably set a flag or log something here, too.
             raise ValueError
-        parsed_old = self.parse(self.content)
+
+        if self.content:
+            parsed_old = self.parse(self.content)
+
+        if not self.content_type:
+            self.content_type = parsed.version
 
         self.content = response.content
         self.timestamp = datetime.now()
@@ -100,6 +107,9 @@ class Topic(Persistent):
         updated_entries = compare.updated_entries()
         metadata = compare.changed_metadata()
 
+        if new_entries or updated_entries or metadata:
+            self.changed = True
+
         all_entries = new_entries + updated_entries
         all_entries.sort(reverse=True, key=lambda entry: entry.updated_parsed)
 
@@ -124,4 +134,9 @@ class Topic(Persistent):
 
         return new_feed.writeString(parsed_feed['encoding'])
 
-
+    def topic_notify_subscribers(self):
+        """
+        Notify subscribers to this topic that the feed has been updated.
+        """
+        for url, subsciber in self.subscribers.items():
+            pass
