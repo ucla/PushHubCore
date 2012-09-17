@@ -271,3 +271,32 @@ class SubscribeTests(BaseTest):
         with patch('requests.get', new_callable=MockResponse, status_code=404):
             info = subscribe(request)
         self.assertEqual(info.status_code, 409)
+
+    @patch.object(Hub, 'get_challenge_string')
+    def test_subscribe_to_actual_topic(self, mock_get_challenge_string):
+        """
+        Make sure that the topic subscribed to is same as published.
+        """
+        data = self.default_data.copy()
+        mock_get_challenge_string.return_value = self.challenge
+        request = self.r(
+            '/subscribe',
+            POST=data
+        )
+        # Publish the URL first.
+        self.root.publish('http://www.google.com/')
+        urls = {
+            'http://www.google.com/': MockResponse(content=good_atom),
+            'http://httpbin.org/get': MockResponse(
+                    content=self.challenge,
+                    status_code=200
+            )
+        }
+        with patch('requests.get', new_callable=MultiResponse, mapping=urls):
+            info = subscribe(request)
+
+        hub = self.root
+        topic = hub.topics.get('http://www.google.com/')
+        subscriber = hub.subscribers.get('http://httpbin.org/get')
+
+        self.assertEqual(topic, subscriber.topics.get('http://www.google.com/'))
