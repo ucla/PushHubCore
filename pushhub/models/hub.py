@@ -43,7 +43,7 @@ class Hub(Folder):
         Sends updates to each topic's subscribers to let them know
         of new content.
         """
-        if not self.notify_queue or not self.topics:
+        if self.notify_queue is None or self.topics is None:
             return
 
         for url, topic in self.topics.items():

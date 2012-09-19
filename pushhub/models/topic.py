@@ -180,7 +180,7 @@ class Topic(Persistent):
         headers = [('Content-Type', c_type)]
         body = self.content
 
-        for url, subsciber in self.subscribers.items():
+        for url, subscriber in self.subscribers.items():
             queue.put({
                 'callback': url,
                 'headers': headers,

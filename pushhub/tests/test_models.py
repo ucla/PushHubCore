@@ -5,7 +5,7 @@ from feedparser import parse
 from zc.queue import Queue
 
 from ..models.hub import Hub
-from ..models.topic import Topic
+from ..models.topic import Topic, Topics
 from ..models.subscriber import Subscriber
 from ..utils import is_valid_url
 
@@ -459,6 +459,39 @@ class HubTests(TestCase):
         t = Topic('http://httpbin.org/get')
         s = Subscriber('http://www.google.com/')
         t.add_subscriber(s)
+
+
+class HubQueueTests(TestCase):
+
+    def setUp(self):
+        self.hub = Hub()
+        self.hub.topics = Topics()
+        self.hub.notify_queue = Queue()
+
+    def tearDown(self):
+        self.hub.notify_queue = None
+        self.hub = None
+
+    def test_notifying_all_subscribers(self):
+        topic = Topic('http://www.google.com/')
+        topic.changed = True
+        topic.content_type = 'atom'
+        topic.content = good_atom
+        s1 = Subscriber('http://httpbin.org/get')
+        s2 = Subscriber('http://github.com/')
+        topic.add_subscriber(s1)
+        topic.add_subscriber(s2)
+
+        self.hub.topics.add(topic.url, topic)
+
+        self.hub.notify_subscribers()
+
+        q = self.hub.notify_queue
+
+        self.assertEqual(len(q), 2)
+
+        self.assertEqual(q[0]['callback'], 'http://github.com/')
+        self.assertEqual(q[1]['callback'], 'http://httpbin.org/get')
 
 
 class UtilTests(TestCase):
