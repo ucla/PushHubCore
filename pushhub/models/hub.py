@@ -29,6 +29,7 @@ class Hub(Folder):
     def __init__(self):
         self.topics = None
         self.subscribers = None
+        self.notify_queue = None
 
     def publish(self, topic_url):
         """
@@ -39,10 +40,14 @@ class Hub(Folder):
 
     def notify_subscribers(self):
         """
-        Sends updates to each of the subscribers to let them know
-        of new topic content.
+        Sends updates to each topic's subscribers to let them know
+        of new content.
         """
-        pass
+        if not self.notify_queue or not self.topics:
+            return
+
+        for url, topic in self.topics.items():
+            topic.notify_subscribers(self.notify_queue)
 
     def subscribe(self, callback_url, topic_url):
         """
