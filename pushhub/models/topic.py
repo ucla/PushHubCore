@@ -14,6 +14,7 @@ import requests
 from repoze.folder import Folder
 from zope.interface import Interface, implements
 from webhelpers import feedgenerator
+from zc.queue import Queue
 
 from ..utils import FeedComparator
 
@@ -145,9 +146,35 @@ class Topic(Persistent):
 
         return new_feed.writeString(parsed_feed['encoding'])
 
-    def topic_notify_subscribers(self):
+    def notify_subscribers(self, queue):
         """
         Notify subscribers to this topic that the feed has been updated.
+
+        This will put the following data into a queue:
+            Subscriber callback URL
+            The feed content type
+            The updated feed entries
+
+        The queue can process the requests as long as it has this information.
         """
+        c_type = None
+        if 'atom' in self.content_type:
+            c_type = 'application/atom+xml'
+        elif 'rss' in self.content_type:
+            c_type = 'application/rss+xml'
+
+        if c_type is None:
+            raise ValueError(
+                'Invalid content type. Only Atom or RSS are supported'
+            )
+
+        headers = [('Content-Type', c_type)]
+        body = self.content
+
         for url, subsciber in self.subscribers.items():
-            pass
+            queue.put({
+                'callback': url,
+                'headers': headers,
+                'body': body,
+                'max_tries': 10
+            })

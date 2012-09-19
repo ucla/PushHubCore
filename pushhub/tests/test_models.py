@@ -2,6 +2,7 @@ from unittest import TestCase
 from mock import patch
 
 from feedparser import parse
+from zc.queue import Queue
 
 from ..models.hub import Hub
 from ..models.topic import Topic
@@ -130,6 +131,37 @@ class TopicTests(TestCase):
         parsed = t.parse(good_atom)
         self.assertEqual(parsed['channel']['title'], 'Example Feed')
         self.assertEqual(len(parsed['items']), 4)
+
+
+class TopicSubscriberTests(TestCase):
+
+    def setUp(self):
+        self.topic = Topic('http://www.google.com/')
+        self.first = Subscriber('http://httpbin.org/get')
+        self.second = Subscriber('http://www.google.com/')
+        self.topic.content = good_atom
+
+    def tearDown(self):
+        self.topic = None
+        self.first = self.second = None
+
+    def test_notifying_subscribers(self):
+        self.topic.content_type = 'atom'
+        self.topic.add_subscriber(self.first)
+        self.topic.add_subscriber(self.second)
+
+        q = Queue()
+        self.topic.notify_subscribers(q)
+
+        self.assertEqual(q[0]['callback'], self.first.callback_url)
+        self.assertEqual(q[0]['headers'],
+                        [('Content-Type', 'application/atom+xml')])
+        self.assertTrue('John Doe' in q[0]['body'])
+
+        self.assertEqual(q[1]['callback'], self.second.callback_url)
+        self.assertEqual(q[1]['headers'],
+                        [('Content-Type', 'application/atom+xml')])
+        self.assertTrue('John Doe' in q[1]['body'])
 
 
 class TopicNewEntriesTests(TestCase):
