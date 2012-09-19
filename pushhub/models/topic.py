@@ -157,6 +157,10 @@ class Topic(Persistent):
 
         The queue can process the requests as long as it has this information.
         """
+
+        if not self.subscribers:
+            return
+
         c_type = None
         if 'atom' in self.content_type:
             c_type = 'application/atom+xml'

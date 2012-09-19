@@ -163,6 +163,23 @@ class TopicSubscriberTests(TestCase):
                         [('Content-Type', 'application/atom+xml')])
         self.assertTrue('John Doe' in q[1]['body'])
 
+    def test_notifying_subscribers_bad_content_type(self):
+        self.topic.content_type = 'badtype'
+        self.topic.add_subscriber(self.first)
+        self.topic.add_subscriber(self.second)
+
+        q = Queue()
+
+        self.assertRaises(ValueError, self.topic.notify_subscribers, q)
+
+    def test_notifying_no_subscribers(self):
+        self.topic.content_type = 'atom'
+        q = Queue()
+
+        self.topic.notify_subscribers(q)
+
+        self.assertEqual(len(q), 0)
+
 
 class TopicNewEntriesTests(TestCase):
 
