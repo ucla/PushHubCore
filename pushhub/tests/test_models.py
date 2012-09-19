@@ -147,6 +147,7 @@ class TopicSubscriberTests(TestCase):
 
     def test_notifying_subscribers(self):
         self.topic.content_type = 'atom'
+        self.topic.changed = True
         self.topic.add_subscriber(self.first)
         self.topic.add_subscriber(self.second)
 
@@ -165,6 +166,7 @@ class TopicSubscriberTests(TestCase):
 
     def test_notifying_subscribers_bad_content_type(self):
         self.topic.content_type = 'badtype'
+        self.topic.changed = True
         self.topic.add_subscriber(self.first)
         self.topic.add_subscriber(self.second)
 

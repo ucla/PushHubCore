@@ -163,6 +163,9 @@ class Topic(Persistent):
         if not self.subscribers:
             return
 
+        if not self.changed:
+            return
+
         c_type = None
         if 'atom' in self.content_type:
             c_type = 'application/atom+xml'
@@ -184,3 +187,8 @@ class Topic(Persistent):
                 'body': body,
                 'max_tries': 10
             })
+
+        # We've notified all of our subscribers,
+        # so we can set the flag to not notify them again
+        # until another change
+        self.changed = False
