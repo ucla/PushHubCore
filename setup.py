@@ -22,7 +22,7 @@ requires = [
     ]
 
 setup(name='push-hub',
-      version='0.3',
+      version='0.4',
       description='push-hub',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
