@@ -58,7 +58,6 @@ class Topic(Persistent):
 
         user_agent = "PuSH Hub (+%s; %s)" % (hub_url, self.subscriber_count)
 
-
         headers = {'User-Agent': user_agent}
 
         response = requests.get(self.url, headers=headers)
@@ -74,15 +73,18 @@ class Topic(Persistent):
             self.changed = True
         else:
             parsed_old = self.parse(self.content)
+            # assemble_newest_entries will set changed flag if this isn't
+            # the first fetch
             newest_entries = self.assemble_newest_entries(parsed, parsed_old)
 
         if not self.content_type:
             self.content_type = parsed.version
 
-        if self.changed:
+        if self.changed and self.content:
             self.content = self.generate_feed(newest_entries)
+        else:
+            self.content = response.content
 
-        self.content = response.content
         self.timestamp = datetime.now()
 
     def parse(self, content):
