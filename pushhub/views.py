@@ -42,6 +42,7 @@ def publish(request):
         return exception_response(400,
                                   body=error_msg,
                                   headers=[('Content-Type', 'text/plain')])
+    hub.notify_subscribers()
 
     return exception_response(204)
 
