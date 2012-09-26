@@ -40,6 +40,7 @@ setup(name='push-hub',
       zip_safe=False,
       install_requires = requires,
       tests_require= requires,
+      extras_require={'test': ['mock']},
       test_suite="pushhub",
       entry_points = """\
       [paste.app_factory]
