@@ -136,3 +136,27 @@ def subscribe(request):
         )
     # verified and active
     return exception_response(204)
+
+
+@require_post
+def listen(request):
+    listener_url = request.POST.get('listener.callback', '')
+    error_msg = ''
+
+    if not listener_url:
+        error_msg = "Malformed URL: %s" % listener_url
+
+    hub = request.root
+
+    try:
+        hub.register_listener(listener_url)
+    except ValueError:
+        error_msg = "Malformed URL: %s" % listener_url
+
+    if error_msg:
+        return exception_response(400,
+                                  body=error_msg,
+                                  headers=[('Content-Type', 'text/plain')])
+    return exception_response(200)
+
+

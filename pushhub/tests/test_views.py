@@ -9,9 +9,10 @@ from zc.queue import Queue
 
 from .mocks import MockResponse, MultiResponse, good_atom
 from ..models.hub import Hub
+from ..models.listener import Listeners
 from ..models.topic import Topic, Topics
 from ..models.subscriber import Subscriber
-from ..views import publish, subscribe
+from ..views import listen, publish, subscribe
 
 
 class BaseTest(unittest.TestCase):
@@ -328,3 +329,16 @@ class SubscribeTests(BaseTest):
         subscriber = hub.subscribers.get('http://httpbin.org/get')
 
         self.assertEqual(topic, subscriber.topics.get('http://www.google.com/'))
+
+
+@patch('requests.get', new_callable=MockResponse, content=good_atom)
+@patch('requests.post', new_callable=MockResponse, status_code=200)
+class ListenTests(BaseTest):
+    def test_adding_listener(self, mock_get, mock_post):
+        request = self.r('/listen',
+                         POST={'listener.callback': 'http://www.example.com/'})
+        self.root.publish('http://www.site.com/')
+        response = listen(request)
+        self.assertEqual(response.status_code, 200)
+        l = self.root.listeners.get('http://www.example.com/')
+        self.assertTrue(l)
