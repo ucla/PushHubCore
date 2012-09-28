@@ -2,6 +2,7 @@ from persistent.mapping import PersistentMapping
 
 from zc.queue import Queue
 
+from .listener import Listeners
 from .subscriber import Subscribers
 from .topic import Topics
 from .hub import Hub
@@ -24,6 +25,11 @@ def appmaker(zodb_root):
         topics = Topics()
         app_root.topics = topics
         topics.__name__ = 'topics'
+        topics.__parent__ = app_root
+
+        listeners = Listeners()
+        app_root.listeners = listeners
+        topics.__name__ = 'listeners'
         topics.__parent__ = app_root
 
         notify_queue = Queue()

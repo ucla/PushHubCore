@@ -12,6 +12,7 @@ from string import ascii_letters, digits
 from zope.interface import Interface, implements
 from repoze.folder import Folder
 
+from .listener import Listener
 from .topic import Topics, Topic
 from .subscriber import Subscribers, Subscriber
 
@@ -30,6 +31,7 @@ class Hub(Folder):
         self.topics = None
         self.subscribers = None
         self.notify_queue = None
+        self.listeners = None
 
     def publish(self, topic_url):
         """
@@ -176,3 +178,11 @@ class Hub(Folder):
                 topic.fetch(hub_url)
             except ValueError:
                 continue
+
+    def register_listener(self, callback_url):
+        listener = Listener(callback_url)
+        self.listeners.add(callback_url, listener)
+
+    def notify_listeners(self, topic_url):
+        for url, listener in self.listeners.items():
+            listener.notify(topic_url)

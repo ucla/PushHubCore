@@ -5,6 +5,7 @@ from feedparser import parse
 from zc.queue import Queue
 
 from ..models.hub import Hub
+from ..models.listener import Listener, Listeners
 from ..models.topic import Topic, Topics
 from ..models.subscriber import Subscriber
 from ..utils import is_valid_url
@@ -456,9 +457,18 @@ class HubTests(TestCase):
         self.assertTrue(bad is None)
 
     def test_notify_subscribers(self):
+        # XXX This test is in complete.
         t = Topic('http://httpbin.org/get')
         s = Subscriber('http://www.google.com/')
         t.add_subscriber(s)
+
+    def test_register_listener(self):
+        hub = Hub()
+        hub.listeners = Listeners()
+        hub.register_listener('http://www.site.com/')
+        self.assertEqual(len(hub.listeners), 1)
+        l = hub.listeners.get('http://www.site.com/')
+        self.assertEqual(l.callback_url, 'http://www.site.com/')
 
 
 class HubQueueTests(TestCase):
@@ -489,6 +499,20 @@ class HubQueueTests(TestCase):
         self.assertEqual(len(q), 2)
         self.assertEqual(q[0]['callback'], 'http://github.com/')
         self.assertEqual(q[1]['callback'], 'http://httpbin.org/get')
+
+
+class ListenerTest(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_notify_listener(self):
+        l = Listener('http://www.site.com/')
+        with patch('requests.get', new_callable=MockResponse, status_code=200):
+            response = l.notify('http://www.example.com/')
+        self.assertEqual(response.status_code, 200)
 
 
 class UtilTests(TestCase):
