@@ -9,6 +9,7 @@ import requests
 
 from zope.interface import Interface, implements
 
+from .topic import Topics
 from ..utils import is_valid_url
 
 class Listeners(Folder):
@@ -28,6 +29,7 @@ class Listener(Persistent):
         if not is_valid_url(callback_url):
             raise ValueError
         self.callback_url = callback_url
+        self.topics = Topics()
 
     def notify(self, topic_url):
         data = {'topic': topic_url}

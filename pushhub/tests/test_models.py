@@ -470,6 +470,26 @@ class HubTests(TestCase):
         l = hub.listeners.get('http://www.site.com/')
         self.assertEqual(l.callback_url, 'http://www.site.com/')
 
+    def test_notify_listener_of_topic(self):
+        hub = Hub()
+        hub.listeners = Listeners()
+        hub.topics = Topics()
+        hub.register_listener('http://www.site.com/')
+        with patch('requests.get', new_callable=MockResponse, status_code=200):
+            hub.publish('http://www.example.com/')
+        l = hub.listeners.get('http://www.site.com/')
+        self.assertTrue(l.topics.get('http://www.example.com/'))
+
+    def test_notify_listener_of_existing_topics(self):
+        hub = Hub()
+        hub.listeners = Listeners()
+        hub.topics = Topics()
+        with patch('requests.get', new_callable=MockResponse, status_code=200):
+            hub.publish('http://www.site.com/')
+            hub.register_listener('http://www.example.com/')
+        l = hub.listeners.get('http://www.example.com/')
+        self.assertTrue(l.topics.get('http://www.site.com/'))
+
 
 class HubQueueTests(TestCase):
 
