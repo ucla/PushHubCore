@@ -177,7 +177,7 @@ class Topic(Persistent):
                 'Invalid content type. Only Atom or RSS are supported'
             )
 
-        headers = [('Content-Type', c_type)]
+        headers = {'Content-Type': c_type}
         body = self.content
 
         for url, subscriber in self.subscribers.items():

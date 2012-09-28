@@ -4,6 +4,7 @@ as well as access to fixture data as Python variables.
 """
 
 from os.path import abspath, dirname, join
+from requests.exceptions import HTTPError
 
 path = abspath(dirname(__file__))
 
@@ -21,6 +22,16 @@ class MockResponse(object):
 
     def __call__(self, *args, **kwargs):
         return self
+
+    def raise_for_status(self):
+        """Generates exceptions if HTTP status code isn't in 2xx range.
+
+        Mocks the same method on requests's Response class, but does not
+        set the error messages based on the code.
+        """
+        if self.status_code >= 300:
+            raise HTTPError
+
 
 
 class MultiResponse(object):

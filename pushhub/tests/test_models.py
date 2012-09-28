@@ -156,12 +156,12 @@ class TopicSubscriberTests(TestCase):
 
         self.assertEqual(q[0]['callback'], self.first.callback_url)
         self.assertEqual(q[0]['headers'],
-                        [('Content-Type', 'application/atom+xml')])
+                         {'Content-Type': 'application/atom+xml'})
         self.assertTrue('John Doe' in q[0]['body'])
 
         self.assertEqual(q[1]['callback'], self.second.callback_url)
         self.assertEqual(q[1]['headers'],
-                        [('Content-Type', 'application/atom+xml')])
+                        {'Content-Type': 'application/atom+xml'})
         self.assertTrue('John Doe' in q[1]['body'])
 
     def test_notifying_subscribers_bad_content_type(self):
