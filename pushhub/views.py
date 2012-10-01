@@ -11,7 +11,7 @@ VALID_PORTS = frozenset([
 
 
 @require_post
-def publish(request):
+def publish(context, request):
     topic_mode = request.POST.get('hub.mode', '')
     topic_urls = request.POST.getall('hub.url')
 
@@ -48,7 +48,7 @@ def publish(request):
 
 
 @require_post
-def subscribe(request):
+def subscribe(context, request):
     # required
     callback = request.POST.get('hub.callback', '')
     topic = request.POST.get('hub.topic', '')
@@ -139,7 +139,7 @@ def subscribe(request):
 
 
 @require_post
-def listen(request):
+def listen(context, request):
     listener_url = request.POST.get('listener.callback', '')
     error_msg = ''
 

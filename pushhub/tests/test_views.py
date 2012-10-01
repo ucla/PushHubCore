@@ -50,7 +50,7 @@ class PublishTests(BaseTest):
 
     def test_publish(self, mock):
         request = Request.blank('/publish')
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 405)
 
     def test_publish_wrong_type(self, mock):
@@ -59,19 +59,19 @@ class PublishTests(BaseTest):
         request = Request.blank('/publish',
                                 headers=headers,
                                 POST={'thing': 'thing'})
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 406)
 
     def test_publish_content_type_without_mode(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         request = self.r('/publish', headers, POST={})
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 400)
 
     def test_publish_wrong_method(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         request = Request.blank('', headers)
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 405)
         self.assertEqual(info.headers['Allow'], 'POST')
 
@@ -80,20 +80,20 @@ class PublishTests(BaseTest):
         data = {'hub.mode': 'publish', 'hub.url': 'http://www.google.com/'}
         request = self.r('/publish', headers, POST=data)
         with patch('requests.get', new_callable=MockResponse, status_code=204):
-            info = publish(request)
+            info = publish(None, request)
         self.assertEqual(info.status_code, 204)
 
     def test_publish_content_type_with_incorrect_mode(self, mock):
         headers = [("Content-Type", "application/x-www-form-urlencoded")]
         data = {'hub.mode': 'bad'}
         request = self.r('/publish', headers, POST=data)
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 400)
 
     def test_publish_with_no_urls(self, mock):
         data = {'hub.mode': 'publish'}
         request = self.r('/publish', self.valid_headers, POST=data)
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 400)
 
     def test_publish_with_multiple_urls(self, mock):
@@ -101,7 +101,7 @@ class PublishTests(BaseTest):
         data.add('hub.url', 'http://www.example.com/')
         data.add('hub.url', 'http://www.site.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
-        info = publish(request)
+        info = publish(None, request)
         self.assertEqual(info.status_code, 204)
 
     def test_publish_fetches_topic_content(self, mock):
@@ -110,7 +110,7 @@ class PublishTests(BaseTest):
         data.add('hub.url', 'http://www.site.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
         hub = request.root
-        info = publish(request)
+        info = publish(None, request)
 
         first = hub.topics.get('http://www.example.com/')
         second = hub.topics.get('http://www.site.com/')
@@ -139,7 +139,7 @@ class PublishTests(BaseTest):
         data.add('hub.url', 'http://example.com/')
         request = self.r('/publish', self.valid_headers, POST=data)
         q = self.root.notify_queue
-        publish(request)
+        publish(None, request)
 
         self.assertEqual(len(q), 1)
         self.assertEqual(q[0]['callback'], 'http://www.site.com/')
@@ -156,7 +156,7 @@ class SubscribeTests(BaseTest):
 
     def test_subscribe(self):
         request = Request.blank('/subscribe')
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 405)
 
     def test_invalid_content_type(self):
@@ -166,7 +166,7 @@ class SubscribeTests(BaseTest):
             headers=headers,
             POST={"thing": "thing"}
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 406)
         self.assertEqual(
             info.headers['Accept'],
@@ -179,7 +179,7 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 400)
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
         self.assertTrue("hub.verify" in info.body)
@@ -197,7 +197,7 @@ class SubscribeTests(BaseTest):
         )
         with patch('requests.get', new_callable=MockResponse,
                    content=self.challenge, status_code=200):
-            info = subscribe(request)
+            info = subscribe(None, request)
         self.assertEqual(info.status_code, 204)
 
     def test_multiple_invalid_verify_types(self):
@@ -209,7 +209,7 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 400)
         self.assertEqual(info.headers['Content-Type'], 'text/plain')
         self.assertTrue("hub.verify" in info.body)
@@ -222,7 +222,7 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.callback' in info.body)
 
@@ -236,7 +236,7 @@ class SubscribeTests(BaseTest):
         )
         with patch('requests.get', new_callable=MockResponse,
                    content=self.challenge, status_code=200):
-            info = subscribe(request)
+            info = subscribe(None, request)
         self.assertEqual(info.status_code, 204)
 
     def test_invalid_mode(self):
@@ -247,7 +247,7 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data,
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.mode' in info.body)
 
@@ -261,7 +261,7 @@ class SubscribeTests(BaseTest):
         )
         with patch('requests.get', new_callable=MockResponse,
                    content=self.challenge, status_code=200):
-            info = subscribe(request)
+            info = subscribe(None, request)
         self.assertEqual(info.status_code, 204)
 
     @patch.object(Hub, 'get_challenge_string')
@@ -274,7 +274,7 @@ class SubscribeTests(BaseTest):
         )
         with patch('requests.get', new_callable=MockResponse,
                    content=self.challenge, status_code=200):
-            info = subscribe(request)
+            info = subscribe(None, request)
         self.assertEqual(info.status_code, 204)
 
     def test_invalid_topic(self):
@@ -285,7 +285,7 @@ class SubscribeTests(BaseTest):
             '/subscribe',
             POST=data
         )
-        info = subscribe(request)
+        info = subscribe(None, request)
         self.assertEqual(info.status_code, 400)
         self.assertTrue('hub.topic' in info.body)
 
@@ -298,7 +298,7 @@ class SubscribeTests(BaseTest):
             POST=data
         )
         with patch('requests.get', new_callable=MockResponse, status_code=404):
-            info = subscribe(request)
+            info = subscribe(None, request)
         self.assertEqual(info.status_code, 409)
 
     @patch.object(Hub, 'get_challenge_string')
@@ -322,7 +322,7 @@ class SubscribeTests(BaseTest):
             )
         }
         with patch('requests.get', new_callable=MultiResponse, mapping=urls):
-            info = subscribe(request)
+            info = subscribe(None, request)
 
         hub = self.root
         topic = hub.topics.get('http://www.google.com/')
@@ -338,7 +338,7 @@ class ListenTests(BaseTest):
         request = self.r('/listen',
                          POST={'listener.callback': 'http://www.example.com/'})
         self.root.publish('http://www.site.com/')
-        response = listen(request)
+        response = listen(None, request)
         self.assertEqual(response.status_code, 200)
         l = self.root.listeners.get('http://www.example.com/')
         self.assertTrue(l)
