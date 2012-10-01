@@ -3,6 +3,7 @@ from unittest import TestCase
 from feedparser import parse
 
 from .mocks import good_atom, updated_atom
+from .mocks import no_author_good_atom, no_author_updated_atom
 
 from ..utils import FeedComparator
 
@@ -55,6 +56,23 @@ class TestFeedRemoved(BaseComparatorTestCase):
 
 
 class TestFeedMetaDataChanged(BaseComparatorTestCase):
+
+    def test_feed_tag_changed(self):
+        changed_metadata = self.compare.changed_metadata()
+        self.assertEqual(len(changed_metadata), 5)
+        self.assertRaises(AttributeError, getattr, changed_metadata, 'entries')
+
+    def test_feed_tag_title_changed(self):
+        changed_metadata = self.compare.changed_metadata()
+        self.assertEqual(changed_metadata['feed']['title'], 'Updated Feed')
+
+
+class TestFeedNoAuthor(BaseComparatorTestCase):
+    """This is the same as TestFeedMetaDataChanged, but with atom feeds
+    with no author.
+    """
+    old_parsed = parse(no_author_good_atom)
+    new_parsed = parse(no_author_updated_atom)
 
     def test_feed_tag_changed(self):
         changed_metadata = self.compare.changed_metadata()

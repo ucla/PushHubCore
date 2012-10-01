@@ -10,6 +10,10 @@ path = abspath(dirname(__file__))
 
 good_atom = open(join(path, 'fixtures', 'example.xml'), 'r').read()
 updated_atom = open(join(path, 'fixtures', 'updated.xml'), 'r').read()
+no_author_good_atom = open(
+    join(path, 'fixtures', 'no-author-example.xml'), 'r').read()
+no_author_updated_atom = open(
+    join(path, 'fixtures', 'no-author-updated.xml'), 'r').read()
 
 
 class MockResponse(object):

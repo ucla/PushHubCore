@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Updated Feed</title>
+  <link href="http://example.org/"/>
+  <!-- Normally here would be source, title, author, id, etc ... -->
+
+  <link rel="hub" href="http://myhub.example.com/endpoint" />
+  <link rel="self" href="http://publisher.example.com/happycats.xml" />
+  <updated>2008-08-11T02:15:01Z</updated>
+
+  <entry>
+    <title>Colby Nolan</title>
+    <link href="http://publisher.example.com/happycat27" />
+    <id>http://publisher.example.com/happycat27.xml</id>
+    <updated>2012-09-14T02:15:01Z</updated>
+    <content>
+        Colby Nolan is a housecat who was awarded an MBA degree in 2004 by Trinity Southern University, a Dallas, Texas-based diploma mill, sparking a fraud lawsuit by the Pennsylvania attorney general's office.[1]
+
+Colby Nolan belongs to a deputy attorney general. In looking to expose Trinity Southern University for fraud, some undercover agents had the then six-year-old Colby Nolan obtain a bachelor's degree in business administration for $299. On the cat's application, the agents claimed that the cat had previously taken courses at a community college, worked at a fast-food restaurant, babysat, and maintained a newspaper route. Then the school informed Colby that, due to the job experience listed on his application, he was eligible for an executive MBA for $100 more. The agents then sent for Colby's transcript, which claimed that Nolan had a 3.5 grade point average.
+
+Jerry Pappert, Pennsylvania's attorney general, filed a lawsuit against Trinity Southern University upon learning that the cat had received the degree.[2] In the lawsuit, Pappert also told the diploma mill, which had used e-mail spam to sell degrees, to provide restitution to anyone who had ordered a degree from them.
+
+In December 2004 the Texas Attorney General obtained a temporary restraining order under the Texas Deceptive Trade Practices Act against Trinity Southern and its owners, Craig B. and Alton S. Poe. The court also ordered the school's assets frozen.[3] In March 2005 the Poes were assessed fines of over $100,000 by the court and were ordered not to market or promote fraudulent, substandard degree programs or to represent their university as being accredited or affiliated with legitimate universities.[4][5] It was reported that the Poes also were associated with the names Wesleyan International University and Prixo Southern University.[5] Since 2005, Trinity Southern University's website at trinitysouthernuniversity.org is offline.[6]
+    </content>
+  </entry>
+
+  <!-- Example of a full entry. -->
+  <entry>
+    <title>Heathcliff</title>
+    <link href="http://publisher.example.com/happycat26.xml" />
+    <id>http://publisher.example.com/happycat26.xml</id>
+    <updated>2012-09-13T02:15:01Z</updated>
+    <content>
+        What a happy cat. Full content goes here.  This entry was changed!
+
+    </content>
+  </entry>
+
+
+  <!-- Example of an entity that isn't full/is truncated. This is implied
+       by the lack of a <content> element and a <summary> element instead. -->
+  <entry >
+    <title>Heathcliff</title>
+    <link href="http://publisher.example.com/happycat25.xml" />
+    <id>http://publisher.example.com/happycat25.xml</id>
+    <updated>2008-08-11T02:15:01Z</updated>
+    <summary>
+      What a happy cat!
+    </summary>
+  </entry>
+
+  <!-- Meta-data only; implied by the lack of <content> and
+       <summary> elements. -->
+  <entry>
+    <title>Garfield</title>
+    <link rel="alternate" href="http://publisher.example.com/happycat24.xml" />
+    <id>http://publisher.example.com/happycat24.xml</id>
+    <updated>2008-08-11T02:15:01Z</updated>
+  </entry>
+
+
+</feed>
+

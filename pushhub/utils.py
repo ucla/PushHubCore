@@ -156,7 +156,7 @@ class FeedComparator(object):
         if past_feed['title'] != new_feed['title']:
             changed = True
 
-        if past_feed['author'] != new_feed['author']:
+        if past_feed.get('author', None) != new_feed.get('author', None):
             changed = True
 
         if changed:
