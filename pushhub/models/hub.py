@@ -28,6 +28,7 @@ class Hub(Folder):
     title = "Hub"
 
     def __init__(self):
+        super(Hub, self).__init__()
         self.topics = None
         self.subscribers = None
         self.notify_queue = None
