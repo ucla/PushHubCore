@@ -95,7 +95,8 @@ class TopicTests(TestCase):
         s = Subscriber('http://httpbin.org/get')
         self.assertRaises(KeyError, t.remove_subscriber, s)
 
-    def test_fetching_bad_content(self):
+    @patch('requests.get', new_callable=MockResponse, content="bad content")
+    def test_fetching_bad_content(self, mock):
         t = Topic('http://httpbin.org/get')
         self.assertRaises(ValueError, t.fetch, 'http://myhub.com/')
         # Nothing should be changed if the fetch fails
