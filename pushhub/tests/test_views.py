@@ -357,4 +357,13 @@ class ListenTests(BaseTest):
         l = self.root.listeners.get('http://www.example.com', None)
         self.assertEqual(l.callback_url, 'http://www.example.com')
 
+    def test_bad_callback_url(self, mock_get, mock_post):
+        request = self.r('/listen',
+                         POST={'listener.callback': 'htt://www.example'})
+        self.root.publish('http://www.site.com/')
+        response = listen(None, request)
+        self.assertEqual(response.status_code, 400)
+        l = self.root.listeners.get('http://www.example', None)
+        self.assertEqual(l, None)
+
 
