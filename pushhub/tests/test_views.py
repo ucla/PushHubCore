@@ -342,3 +342,19 @@ class ListenTests(BaseTest):
         self.assertEqual(response.status_code, 200)
         l = self.root.listeners.get('http://www.example.com/')
         self.assertTrue(l)
+
+    def test_failing_listener(self, mock_get, mock_post):
+        """
+        The listener's callback response doesn't matter at this stage;
+        it will only be tested at the queue.
+        """
+        request = self.r('/listen',
+                      POST={'listener.callback': 'http://www.example.com'})
+        self.root.publish('http://www.site.com/')
+        mock_post.status_code = 404
+        response = listen(None, request)
+        self.assertEqual(response.status_code, 200)
+        l = self.root.listeners.get('http://www.example.com', None)
+        self.assertEqual(l.callback_url, 'http://www.example.com')
+
+
