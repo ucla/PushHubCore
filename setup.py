@@ -45,6 +45,8 @@ setup(name='push-hub',
       entry_points = """\
       [paste.app_factory]
       main = pushhub:main
+      [console_scripts]
+      process_subscriber_notices = pushhub.scripts:process_subscriber_notices
       """,
       )
 
