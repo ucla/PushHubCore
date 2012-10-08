@@ -166,4 +166,3 @@ class FeedComparator(object):
             return new_metadata
 
         return None
-
