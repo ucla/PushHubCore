@@ -46,6 +46,9 @@ def register_listener():
     Arguments:
         config_uri: the pyramid configuration to use for the hub
         listener_url: the URl to use as the listener callback
+
+    Example usage:
+        bin/reg_listener etc/paster.ini#pushhub http://localhost/update_feed
     """
     usage = "%prog config_uri listener_url"
     parser = optparse.OptionParser(
