@@ -40,7 +40,6 @@ class Hub(Folder):
         """
         topic = self.get_or_create_topic(topic_url)
         topic.ping()
-        self.notify_listeners(topic)
 
     def notify_subscribers(self):
         """
@@ -188,9 +187,10 @@ class Hub(Folder):
             return
         for topic in self.topics.values():
             listener.topics.add(topic.url, topic)
-            listener.notify(topic.url)
+            listener.notify(topic)
 
-    def notify_listeners(self, topic):
+    def notify_listeners(self, topics):
+        topics = [topic for topic in topics.values()]
         for url, listener in self.listeners.items():
             listener.topics.add(topic.url, topic)
-            listener.notify(topic.url)
+            listener.notify(topic)

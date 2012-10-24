@@ -338,6 +338,8 @@ class ListenTests(BaseTest):
         request = self.r('/listen',
                          POST={'listener.callback': 'http://www.example.com/'})
         self.root.publish('http://www.site.com/')
+        self.root.topics['http://www.site.com/'].content_type = 'atom'
+        mock_post.status_code = 404
         response = listen(None, request)
         self.assertEqual(response.status_code, 200)
         l = self.root.listeners.get('http://www.example.com/')
@@ -351,6 +353,7 @@ class ListenTests(BaseTest):
         request = self.r('/listen',
                       POST={'listener.callback': 'http://www.example.com'})
         self.root.publish('http://www.site.com/')
+        self.root.topics['http://www.site.com/'].content_type = 'atom'
         mock_post.status_code = 404
         response = listen(None, request)
         self.assertEqual(response.status_code, 200)

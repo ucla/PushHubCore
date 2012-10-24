@@ -148,6 +148,27 @@ class Topic(Persistent):
 
         return new_feed.writeString(parsed_feed['encoding'])
 
+    def get_request_data(self):
+        """
+        Return headers and body content useful for sending to a
+        subscriber or listener
+        """
+        c_type = None
+        if 'atom' in self.content_type:
+            c_type = 'application/atom+xml'
+        elif 'rss' in self.content_type:
+            c_type = 'application/rss+xml'
+
+        if c_type is None:
+            raise ValueError(
+                'Invalid content type. Only Atom or RSS are supported'
+            )
+
+        headers = {'Content-Type': c_type}
+        body = self.content
+
+        return (headers, body)
+
     def notify_subscribers(self, queue):
         """
         Notify subscribers to this topic that the feed has been updated.

@@ -478,6 +478,8 @@ class HubTests(TestCase):
         hub.register_listener('http://www.site.com/')
         with patch('requests.get', new_callable=MockResponse, status_code=200):
             hub.publish('http://www.example.com/')
+            hub.topics['http://www.example.com/'].content_type = 'atom'
+            hub.notify_listeners(hub.topics)
         l = hub.listeners.get('http://www.site.com/')
         self.assertTrue(l.topics.get('http://www.example.com/'))
 
@@ -485,8 +487,10 @@ class HubTests(TestCase):
         hub = Hub()
         hub.listeners = Listeners()
         hub.topics = Topics()
+
         with patch('requests.get', new_callable=MockResponse, status_code=200):
             hub.publish('http://www.site.com/')
+            hub.topics['http://www.site.com/'].content_type = 'atom'
             hub.register_listener('http://www.example.com/')
         l = hub.listeners.get('http://www.example.com/')
         self.assertTrue(l.topics.get('http://www.site.com/'))
@@ -531,8 +535,10 @@ class ListenerTest(TestCase):
 
     def test_notify_listener(self):
         l = Listener('http://www.site.com/')
+        t = Topic('http://www.example.com/')
+        t.content_type = 'atom'
         with patch('requests.get', new_callable=MockResponse, status_code=200):
-            response = l.notify('http://www.example.com/')
+            response = l.notify(t)
         self.assertEqual(response.status_code, 200)
 
 

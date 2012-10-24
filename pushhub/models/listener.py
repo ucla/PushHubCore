@@ -31,7 +31,7 @@ class Listener(Persistent):
         self.callback_url = callback_url
         self.topics = Topics()
 
-    def notify(self, topic_url):
-        data = {'topic': topic_url}
-        response = requests.get(self.callback_url, data=data)
+    def notify(self, topic):
+        headers, data = topic.get_request_data()
+        response = requests.get(self.callback_url, data=data, headers=headers)
         return response

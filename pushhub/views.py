@@ -39,6 +39,7 @@ def publish(context, request):
                                   body=error_msg,
                                   headers=[('Content-Type', 'text/plain')])
     hub.notify_subscribers()
+    hub.notify_listeners(hub.topics)
 
     return exception_response(204)
 
@@ -146,7 +147,7 @@ def listen(context, request):
 
     try:
         hub.register_listener(listener_url)
-    except ValueError:
+    except ValueError as e:
         error_msg = "Malformed URL: %s" % listener_url
 
     if error_msg:
