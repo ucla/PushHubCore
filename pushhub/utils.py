@@ -165,4 +165,4 @@ class FeedComparator(object):
             del new_metadata['entries']
             return new_metadata
 
-        return None
+        return {}
