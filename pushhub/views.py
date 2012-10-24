@@ -148,7 +148,7 @@ def listen(context, request):
     try:
         hub.register_listener(listener_url)
     except ValueError as e:
-        error_msg = "Malformed URL: %s" % listener_url
+        error_msg = str(e)
 
     if error_msg:
         return exception_response(400,

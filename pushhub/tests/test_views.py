@@ -360,6 +360,19 @@ class ListenTests(BaseTest):
         l = self.root.listeners.get('http://www.example.com', None)
         self.assertEqual(l.callback_url, 'http://www.example.com')
 
+    def test_bad_topic_content_type(self, mock_get, mock_post):
+        """
+        If the content type on the feed is bad, let the listener know.
+        """
+        request = self.r('/listen',
+                      POST={'listener.callback': 'http://www.example.com'})
+        self.root.publish('http://www.site.com/')
+        response = listen(None, request)
+        self.assertEqual(response.body,
+                         'Invalid content type. Only Atom or RSS are supported'
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_bad_callback_url(self, mock_get, mock_post):
         request = self.r('/listen',
                          POST={'listener.callback': 'htt://www.example'})

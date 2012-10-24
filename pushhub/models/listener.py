@@ -27,7 +27,9 @@ class Listener(Persistent):
 
     def __init__(self, callback_url):
         if not is_valid_url(callback_url):
-            raise ValueError
+            raise ValueError(
+                'Malformed URL: %s'
+            )
         self.callback_url = callback_url
         self.topics = Topics()
 
