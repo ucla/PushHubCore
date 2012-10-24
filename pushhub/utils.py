@@ -160,9 +160,9 @@ class FeedComparator(object):
             changed = True
 
         if changed:
-            new_metadata = deepcopy(self.new_feed)
-            # Get rid of the entries so we can rebuild it.
-            del new_metadata['entries']
-            return new_metadata
+            metadata = deepcopy(self.new_feed)
+        else:
+            metadata = deepcopy(self.past_feed)
 
-        return {}
+        del metadata['entries']
+        return metadata

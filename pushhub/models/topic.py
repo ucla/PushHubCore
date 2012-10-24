@@ -136,7 +136,7 @@ class Topic(Persistent):
             title = parsed_feed['feed']['title'],
             link = parsed_feed['feed']['link'],
             description = parsed_feed['feed']['link'],
-            author = parsed_feed['feed']['author']
+            author = parsed_feed['feed'].get('author', u'Hub Aggregator')
         )
         for entry in parsed_feed.entries:
             new_feed.add_item(
