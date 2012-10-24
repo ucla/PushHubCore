@@ -36,3 +36,34 @@ def process_subscriber_notices():
     notify_subscribers(queue)
 
     env['closer']()
+
+
+def register_listener():
+    description = """
+    Registers a listener URL with the hub. Useful for
+    'bootstrapping' a hub with a default listener.
+
+    Arguments:
+        config_uri: the pyramid configuration to use for the hub
+        listener_url: the URl to use as the listener callback
+    """
+    usage = "%prog config_uri listener_url"
+    parser = optparse.OptionParser(
+        usage=usage,
+        description=textwrap.dedent(description),
+    )
+
+    options, args = parser.parse_args(sys.argv[1:])
+    if not len(args) >= 2:
+        print("You must provide a configuration file and a URL")
+        return 2
+    config_uri = args[0]
+    listener_url = args[1]
+    request = Request.blank('/', base_url='http://localhost/hub/')
+    env = bootstrap(config_uri, request=request)
+
+    hub = env['root']
+
+    hub.register_listener(listener_url)
+
+    env['closer']()

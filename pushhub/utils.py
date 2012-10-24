@@ -64,14 +64,11 @@ def normalize_iri(url):
 # taken from the pubsubhubbub source
 def is_valid_url(url):
     """Returns True if the URL is valid, False otherwise."""
-    from .views import VALID_PORTS
     split = urlparse.urlparse(url)
     if not split.scheme in ('http', 'https'):
         return False
 
     netloc, port = (split.netloc.split(':', 1) + [''])[:2]
-    if port and port not in VALID_PORTS:
-        return False
 
     if not netloc:
         return False

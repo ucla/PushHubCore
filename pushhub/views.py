@@ -5,10 +5,6 @@ from .utils import require_post, is_valid_url, normalize_iri
 # Default expiration time of a lease.
 DEFAULT_LEASE_SECONDS = (5 * 24 * 60 * 60)  # 5 days
 
-VALID_PORTS = frozenset([
-    '80', '443', '4443', '8080', '8081', '8082', '8083', '8084', '8085',
-    '8086', '8087', '8088', '8089', '8188', '8444', '8990'])
-
 
 @require_post
 def publish(context, request):
@@ -68,7 +64,7 @@ def subscribe(context, request):
         error_message = (
             'Invalid parameter: hub.callback; '
             'must be valid URI with no fragment and '
-            'optional port %s' % ','.join(VALID_PORTS)
+            'optional port'
         )
     else:
         callback = normalize_iri(callback)
@@ -77,7 +73,7 @@ def subscribe(context, request):
         error_message = (
             'Invalid parameter: hub.topic; '
             'must be valid URI with no fragment and '
-            'optional port %s' % ','.join(VALID_PORTS)
+            'optional port'
         )
     else:
         topic = normalize_iri(topic)

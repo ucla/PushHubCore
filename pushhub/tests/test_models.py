@@ -555,7 +555,6 @@ class UtilTests(TestCase):
         """
         self.assertFalse(is_valid_url('google.com'))
         self.assertFalse(is_valid_url('http://google.com/#fragment'))
-        # see .views.VALID_PORTS for a list of valid ports
-        self.assertFalse(is_valid_url('https://www.google.com:8888'))
+        self.assertTrue(is_valid_url('https://www.google.com:8888'))
         self.assertFalse(is_valid_url("/path"))
         self.assertFalse(is_valid_url("http://"))
