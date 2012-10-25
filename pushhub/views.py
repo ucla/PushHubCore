@@ -32,12 +32,13 @@ def publish(context, request):
             error_msg = "Malformed URL: %s" % topic_url
 
     if not bad_data:
-        hub.fetch_content(topic_urls, request.application_url)
+        hub.fetch_all_content(request.application_url)
 
     if bad_data and error_msg:
         return exception_response(400,
                                   body=error_msg,
                                   headers=[('Content-Type', 'text/plain')])
+
     hub.notify_subscribers()
     hub.notify_listeners(hub.topics)
 

@@ -149,6 +149,15 @@ class Hub(Folder):
 
         return subscriber
 
+    def get_or_create_listener(self, callback_url):
+        listener = self.listeners.get(callback_url, None)
+
+        if not listener:
+            listener = Listener(callback_url)
+            self.listeners.add(callback_url, listener)
+
+        return listener
+
     def get_challenge_string(self):
         """Generates a random challenge string"""
         choices = ascii_letters + digits
@@ -181,16 +190,19 @@ class Hub(Folder):
                 continue
 
     def register_listener(self, callback_url):
-        listener = Listener(callback_url)
-        self.listeners.add(callback_url, listener)
+        listener = self.get_or_create_listener(callback_url)
         if not self.topics:
             return
         for topic in self.topics.values():
+            if topic.url in listener.topics.keys():
+                continue
             listener.topics.add(topic.url, topic)
             listener.notify(topic)
 
     def notify_listeners(self, topics):
         topics = [topic for topic in topics.values()]
-        for url, listener in self.listeners.items():
-            listener.topics.add(topic.url, topic)
-            listener.notify(topic)
+        for topic in topics:
+            for url, listener in self.listeners.items():
+                if topic.url not in listener.topics.keys():
+                    listener.topics.add(topic.url, topic)
+                listener.notify(topic)

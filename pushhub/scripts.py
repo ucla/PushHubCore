@@ -1,5 +1,6 @@
 import optparse
 import textwrap
+import transaction
 import sys
 
 from pyramid.paster import bootstrap
@@ -68,5 +69,7 @@ def register_listener():
     hub = env['root']
 
     hub.register_listener(listener_url)
+    transaction.commit()
+    print "Registered listener for %s" % listener_url
 
     env['closer']()
