@@ -132,9 +132,15 @@ class Topic(Persistent):
         return metadata
 
     def generate_feed(self, parsed_feed):
+        self_links = [link['href'] for link
+                     in parsed_feed['feed']['links']
+                     if link['rel'] == u'self']
+        if len(self_links) > 0:
+            self_link = self_links[0]
+
         new_feed = feedgenerator.Atom1Feed(
             title = parsed_feed['feed']['title'],
-            link = parsed_feed['feed']['link'],
+            link = self_link,
             description = parsed_feed['feed']['link'],
             author = parsed_feed['feed'].get('author', u'Hub Aggregator')
         )

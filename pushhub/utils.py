@@ -156,6 +156,9 @@ class FeedComparator(object):
         if past_feed.get('author', None) != new_feed.get('author', None):
             changed = True
 
+        if len(new_feed.keys()) > len(past_feed.keys()):
+            changed = True
+
         if changed:
             metadata = deepcopy(self.new_feed)
         else:
