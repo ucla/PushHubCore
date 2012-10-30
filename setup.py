@@ -47,6 +47,7 @@ setup(name='push-hub',
       main = pushhub:main
       [console_scripts]
       process_subscriber_notices = pushhub.scripts:process_subscriber_notices
+      reg_listener = pushhub.scripts:register_listener
       """,
       )
 
