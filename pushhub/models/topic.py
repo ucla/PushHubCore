@@ -15,6 +15,8 @@ from repoze.folder import Folder
 from zope.interface import Interface, implements
 from webhelpers import feedgenerator
 from zc.queue import Queue
+from time import mktime
+from datetime import datetime
 
 from ..utils import FeedComparator
 
@@ -145,14 +147,17 @@ class Topic(Persistent):
             author = parsed_feed['feed'].get('author', u'Hub Aggregator')
         )
         for entry in parsed_feed.entries:
+            updated = datetime.fromtimestamp(mktime(entry['updated_parsed']))
+
             new_feed.add_item(
                 entry.pop('title'),
                 entry.pop('link'),
                 entry.pop('description', ''),
+                pubdate=updated,
                 **entry
             )
-
-        return new_feed.writeString(parsed_feed['encoding'])
+        string = new_feed.writeString(parsed_feed['encoding'])
+        return string
 
     def get_request_data(self):
         """
