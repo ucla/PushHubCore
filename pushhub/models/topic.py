@@ -154,7 +154,7 @@ class Topic(Persistent):
                 entry.pop('link'),
                 entry.pop('description', ''),
                 pubdate=updated,
-                unique_id=entry,
+                unique_id=entry.get('id'),
                 **entry
             )
         string = new_feed.writeString(parsed_feed['encoding'])
