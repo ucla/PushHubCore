@@ -8,6 +8,10 @@ import urlparse
 from functools import wraps
 
 from pyramid.httpexceptions import exception_response
+from webhelpers.feedgenerator import Atom1Feed
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def require_post(fn):
@@ -166,3 +170,65 @@ class FeedComparator(object):
 
         del metadata['entries']
         return metadata
+
+
+class Atom1FeedKwargs(Atom1Feed):
+    """An Atom1Feed that can handle the kwargs passed in for new feed
+    items.
+
+    XXX: This is far from optimal. Need to find a better solution for
+         this problem.
+    """
+
+    # List of fields that have already been handled, or are generated
+    default_fields = [
+        'author_email',
+        'author_link',
+        'author_name',
+        'categories',
+        'description',
+        'enclosure',
+        'guidislink',
+        'item_copyright',
+        'link',
+        'pubdate',
+        'published',
+        'published_parsed',
+        'summary',
+        'title',
+        'ttl',
+        'unique_id',
+        'updated',
+        'updated_parsed',
+    ]
+
+    def _handle_kwarg(self, handler, key, value):
+        """Handle each item and recursively handle lists
+        """
+        if key in self.default_fields or value is None:
+            logger.debug('ignoring: %s, %s' % (key, value))
+            return
+        if isinstance(value, dict):
+            # Handle a dictionary and assume the "value" is what
+            # will be the text of the element.
+            el_content = value.pop('value', '')
+            # The xml parser can't handle a None value
+            for k, v in deepcopy(value).items():
+                if v is None:
+                    value.pop(k)
+            handler.addQuickElement(key, el_content, value)
+        elif isinstance(value, (list, tuple)):
+            # Loop over a list and add each item
+            for item in value:
+                self._handle_kwarg(handler, key, item)
+        else:
+            # Assume everything else is just a simple string
+            handler.addQuickElement(key, value)
+
+    def add_item_elements(self, handler, item):
+        """Process all the default items, then try and add the elements
+        from the keyword arguments.
+        """
+        super(Atom1FeedKwargs, self).add_item_elements(handler, item)
+        for k, v in item.items():
+            self._handle_kwarg(handler, k, v)

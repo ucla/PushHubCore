@@ -13,12 +13,10 @@ from persistent import Persistent
 import requests
 from repoze.folder import Folder
 from zope.interface import Interface, implements
-from webhelpers import feedgenerator
-from zc.queue import Queue
 from time import mktime
-from datetime import datetime
 
 from ..utils import FeedComparator
+from ..utils import Atom1FeedKwargs
 
 
 class Topics(Folder):
@@ -140,11 +138,11 @@ class Topic(Persistent):
         if len(self_links) > 0:
             self_link = self_links[0]
 
-        new_feed = feedgenerator.Atom1Feed(
-            title = parsed_feed['feed']['title'],
-            link = self_link,
-            description = parsed_feed['feed']['link'],
-            author = parsed_feed['feed'].get('author', u'Hub Aggregator')
+        new_feed = Atom1FeedKwargs(
+            title=parsed_feed['feed']['title'],
+            link=self_link,
+            description=parsed_feed['feed']['link'],
+            author=parsed_feed['feed'].get('author', u'Hub Aggregator')
         )
         for entry in parsed_feed.entries:
             updated = datetime.fromtimestamp(mktime(entry['updated_parsed']))
@@ -152,9 +150,11 @@ class Topic(Persistent):
             new_feed.add_item(
                 entry.pop('title'),
                 entry.pop('link'),
-                entry.pop('description', ''),
+                entry.pop('summary', ''),
                 pubdate=updated,
-                unique_id=entry.get('id'),
+                unique_id=entry.pop('id', ''),
+                author_name=entry.pop('author', ''),
+                category=entry.pop('tags', []),
                 **entry
             )
         string = new_feed.writeString(parsed_feed['encoding'])
