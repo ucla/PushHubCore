@@ -35,6 +35,9 @@ class ITopic(Interface):
 class Topic(Persistent):
     implements(ITopic)
 
+    def __repr__(self):
+        return "<Topic %s>" % self.url
+
     def __init__(self, url):
         """Initialize the topic and it's timestamp/content.
         Verification happens afterward.
@@ -149,6 +152,8 @@ class Topic(Persistent):
                      if link['rel'] == u'self']
         if len(self_links) > 0:
             self_link = self_links[0]
+        else:
+            self_link = parsed_feed['feed']['link']
 
         new_feed = Atom1FeedKwargs(
             title=parsed_feed['feed']['title'],

@@ -27,6 +27,9 @@ class ISubscriber(Interface):
 class Subscriber(Persistent):
     implements(ISubscriber)
 
+    def __repr__(self):
+        return "<Subscriber '%s'>" % self.callback_url
+
     def __init__(self, callback_url):
         if not is_valid_url(callback_url):
             raise ValueError

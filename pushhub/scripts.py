@@ -75,7 +75,7 @@ def register_listener():
     env['closer']()
 
 
-def fetch_failed_topics():
+def fetch_all_topics():
     description = """
     Attempts to fetch content for all topics that have been marked as failed
     previously. If the fetch fails during this run, it will not be retried
@@ -86,7 +86,7 @@ def fetch_failed_topics():
         hub_url: the address of the hub that will be reported on topic fetch.
 
     Example usage:
-        bin/fetch_failed_topics etc/paster.ini#pushhub myhub.com
+        bin/fetch_all_topics etc/paster.ini#pushhub myhub.com
 
     """
 
@@ -99,6 +99,7 @@ def fetch_failed_topics():
     options, args = parser.parse_args(sys.argv[1:])
     if not len(args) >= 2:
         print("You must provide a configuration file and a hub url")
+        return
     config_uri = args[0]
     hub_url = args[1]
 
@@ -107,7 +108,7 @@ def fetch_failed_topics():
 
     hub = env['root']
 
-    hub.fetch_all_content(hub_url, only_failed=True)
+    hub.fetch_all_content(hub_url)
 
     transaction.commit()
 

@@ -48,6 +48,7 @@ setup(name='push-hub',
       [console_scripts]
       process_subscriber_notices = pushhub.scripts:process_subscriber_notices
       reg_listener = pushhub.scripts:register_listener
+      fetch_all_topics = pushhub.scripts:fetch_all_topics
       """,
       )
 
