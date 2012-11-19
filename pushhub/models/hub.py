@@ -16,6 +16,10 @@ from .listener import Listener, Listeners
 from .topic import Topics, Topic
 from .subscriber import Subscribers, Subscriber
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class IHub(Interface):
     """Marker interface for hub implementations"""
@@ -40,6 +44,7 @@ class Hub(Folder):
         """
         topic = self.get_or_create_topic(topic_url)
         topic.ping()
+        logger.info('Published topic with URL %s' % topic_url)
 
     def notify_subscribers(self):
         """
@@ -52,7 +57,7 @@ class Hub(Folder):
         for url, topic in self.topics.items():
             topic.notify_subscribers(self.notify_queue)
 
-    def subscribe(self, callback_url, topic_url):
+    def subscribe(self, callback_url, topic_url, verify_callbacks=True):
         """
         Subscribe a subscriber to a topic
 
@@ -62,11 +67,16 @@ class Hub(Folder):
         topic = self.get_or_create_topic(topic_url)
         subscriber = self.get_or_create_subscriber(callback_url)
 
-        verified = self.verify_subscription(subscriber, topic, "subscribe")
+        if verify_callbacks:
+            verified = self.verify_subscription(subscriber, topic, "subscribe")
+        else:
+            verified = True
+
         if verified:
             try:
                 subscriber.topics.add(topic_url, topic)
                 topic.add_subscriber(subscriber)
+                logger.info('Added subscriber with callback %s to topic %s' % (callback_url, topic_url))
             except KeyError:
                 # subscription already exists
                 # this might mean an intent to renew lease
@@ -186,6 +196,7 @@ class Hub(Folder):
 
             try:
                 topic.fetch(hub_url)
+                logger.info('Fetched content for topic %s', topic.url)
             except ValueError:
                 continue
 
@@ -197,7 +208,10 @@ class Hub(Folder):
             if topic.url in listener.topics.keys():
                 continue
             listener.topics.add(topic.url, topic)
+            logger.info('Added listener %s to topic %s' % (callback_url,
+                                                           topic.url))
             listener.notify(topic)
+        logger.info('Registered listener with URL %s' % callback_url)
 
     def notify_listeners(self, topics):
         topics = [topic for topic in topics.values()]

@@ -18,6 +18,9 @@ from time import mktime
 from ..utils import FeedComparator
 from ..utils import Atom1FeedKwargs
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class Topics(Folder):
     title = u"Topics"
@@ -86,6 +89,7 @@ class Topic(Persistent):
             self.content = response.content
 
         self.timestamp = datetime.now()
+        logger.info('Fetched content for topic %s', self.url)
 
     def parse(self, content):
         """Parses a feed into a Python object"""

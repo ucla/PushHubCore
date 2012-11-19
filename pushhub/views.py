@@ -2,6 +2,9 @@ from pyramid.httpexceptions import exception_response
 
 from .utils import require_post, is_valid_url, normalize_iri
 
+import logging
+logger = logging.getLogger(__name__)
+
 # Default expiration time of a lease.
 DEFAULT_LEASE_SECONDS = (5 * 24 * 60 * 60)  # 5 days
 
@@ -56,6 +59,9 @@ def subscribe(context, request):
     # TODO: support for the following optional arguments
     verify_token = unicode(request.POST.get('hub.verify_token', ''))
     secret = unicode(request.POST.get('hub.secret', '')) or None
+    verify_callbacks = request.POST.get('hub.verify_callbacks', 'True')
+    verify_callbacks = verify_callbacks == 'True'
+
     lease_seconds = (
         request.POST.get('hub.lease_seconds', '') or
         str(DEFAULT_LEASE_SECONDS)
@@ -112,9 +118,9 @@ def subscribe(context, request):
     # give preference to sync
     if 'sync' in verify_type:
         if mode == 'subscribe':
-            verified = hub.subscribe(callback, topic)
+            verified = hub.subscribe(callback, topic, verify_callbacks=verify_callbacks)
         else:
-            verified = hub.unsubscribe(callback, topic)
+            verified = hub.unsubscribe(callback, topic, verify_callbacks=verify_callbacks)
 
         if not verified:
             return exception_response(
@@ -122,6 +128,7 @@ def subscribe(context, request):
                 body="Subscription intent not verified",
                 headers=[("Content-Type", "text/plain")]
             )
+            logger.info('Could not verify intent for subscriber %s', callback)
     else:
         # TODO: async verification
         # should return a 202 and then perform verification
@@ -132,6 +139,7 @@ def subscribe(context, request):
             body="async verification currently not supported",
             headers=[("Content-Type", "text/plain")]
         )
+        logger.info('Request for async verification by %s', callback)
     # verified and active
     return exception_response(204)
 
