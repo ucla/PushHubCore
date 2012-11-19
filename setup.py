@@ -49,6 +49,8 @@ setup(name='push-hub',
       process_subscriber_notices = pushhub.scripts:process_subscriber_notices
       reg_listener = pushhub.scripts:register_listener
       fetch_all_topics = pushhub.scripts:fetch_all_topics
+      show_subscribers = pushhub.scripts:show_subscribers
+      show_topics = pushhub.scripts:show_topics
       """,
       )
 

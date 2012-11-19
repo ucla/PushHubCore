@@ -113,3 +113,84 @@ def fetch_all_topics():
     transaction.commit()
 
     env['closer']()
+
+
+def show_subscribers():
+    description = """
+    Lists the current subscriber callback URLs registered with the hub.
+    Arguments:
+        config_uri: the pyramid configuration to use for the hub
+
+    Example usage:
+        bin/show_subscribers etc/paster.ini#pushhub
+
+    """
+
+    usage = "%prog config_uri"
+    parser = optparse.OptionParser(
+        usage=usage,
+        description=textwrap.dedent(description)
+    )
+
+    options, args = parser.parse_args(sys.argv[1:])
+    if not len(args) >= 1:
+        print("You must provide a configuration file.")
+        return
+    config_uri = args[0]
+
+    request = Request.blank('/', base_url='http://localhost/hub')
+    env = bootstrap(config_uri, request=request)
+
+    hub = env['root']
+
+    subscriber_urls = [v.callback_url for v in hub.subscribers.values()]
+    listener_urls = [v.callback_url for v in hub.listeners.values()]
+
+    print "Subscriber URLs:"
+    print "----------------"
+    print "\n".join(subscriber_urls)
+
+    print "\n"
+
+    print "Listener URLs:"
+    print "----------------"
+    print "\n".join(listener_urls)
+    env['closer']()
+
+
+def show_topics():
+    description = """
+    Lists the current topic URLs registered with the hub.
+    Arguments:
+        config_uri: the pyramid configuration to use for the hub
+
+    Example usage:
+        bin/show_topics etc/paster.ini#pushhub
+
+    """
+
+    usage = "%prog config_uri"
+    parser = optparse.OptionParser(
+        usage=usage,
+        description=textwrap.dedent(description)
+    )
+
+    options, args = parser.parse_args(sys.argv[1:])
+    if not len(args) >= 1:
+        print("You must provide a configuration file.")
+        return
+    config_uri = args[0]
+
+    request = Request.blank('/', base_url='http://localhost/hub')
+    env = bootstrap(config_uri, request=request)
+
+    hub = env['root']
+
+    topics = [v for v in hub.topics.values()]
+
+    print "Topic URLs:"
+    print "-----------"
+    for topic in topics:
+        print "%s\t%s" % (topic.url, topic.timestamp)
+
+    env['closer']()
