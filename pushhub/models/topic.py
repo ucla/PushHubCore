@@ -11,6 +11,7 @@ from urlparse import urlparse
 from feedparser import parse
 from persistent import Persistent
 import requests
+from requests.exceptions import ConnectionError
 from repoze.folder import Folder
 from zope.interface import Interface, implements
 from time import mktime
@@ -54,6 +55,7 @@ class Topic(Persistent):
         self.subscribers = Folder()
         self.subscriber_count = 0
         self.last_pinged = None
+        self.failed = False
         self.ping()
 
     def fetch(self, hub_url):
@@ -63,7 +65,13 @@ class Topic(Persistent):
 
         headers = {'User-Agent': user_agent}
 
-        response = requests.get(self.url, headers=headers)
+        try:
+            response = requests.get(self.url, headers=headers)
+            self.failed = False
+        except ConnectionError:
+            logger.warning('Could not connect to topic URL %s', self.url)
+            self.failed = True
+            return
 
         parsed = self.parse(response.content)
 

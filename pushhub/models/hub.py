@@ -173,11 +173,15 @@ class Hub(Folder):
         choices = ascii_letters + digits
         return ''.join(random.choice(choices) for i in xrange(128))
 
-    def fetch_all_content(self, hub_url):
+    def fetch_all_content(self, hub_url, only_failed=False):
         """
         Fetches the content at all topic URLs.
         """
-        for topic_id, topic in self.topics.items():
+        topic_entries = self.topics.items()
+        if only_failed:
+            topic_entries = [t for t in self.topics.items() if t[1].failed]
+
+        for topic_id, topic in topic_entries:
             try:
                 topic.fetch(hub_url)
             except ValueError:
@@ -196,7 +200,6 @@ class Hub(Folder):
 
             try:
                 topic.fetch(hub_url)
-                logger.info('Fetched content for topic %s', topic.url)
             except ValueError:
                 continue
 

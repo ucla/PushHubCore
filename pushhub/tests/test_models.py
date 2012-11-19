@@ -2,6 +2,7 @@ from unittest import TestCase
 from mock import patch
 
 from feedparser import parse
+from requests.exceptions import ConnectionError
 from zc.queue import Queue
 
 from ..models.hub import Hub
@@ -133,6 +134,14 @@ class TopicTests(TestCase):
         parsed = t.parse(good_atom)
         self.assertEqual(parsed['channel']['title'], 'Example Feed')
         self.assertEqual(len(parsed['items']), 4)
+
+    @patch('requests.get')
+    def test_failed_connection(self, mock):
+        """When we fail to connect to a topic, update the flag."""
+        mock.side_effect = ConnectionError
+        t = Topic('http://httpbin.org/get')
+        t.fetch('http://hub.com')
+        self.assertTrue(t.failed)
 
 
 class TopicSubscriberTests(TestCase):
@@ -494,6 +503,24 @@ class HubTests(TestCase):
             hub.register_listener('http://www.example.com/')
         l = hub.listeners.get('http://www.example.com/')
         self.assertTrue(l.topics.get('http://www.site.com/'))
+
+    @patch('pushhub.models.topic.Topic.fetch')
+    def test_fetch_all_failed_topics(self, mocked):
+        hub = Hub()
+        hub.topics = Topics()
+        urls = (
+            'http://site.com/',
+            'http://github.com/',
+        )
+        for url in urls:
+            t = Topic(url)
+            t.failed = True
+            hub.topics.add(url, t)
+
+        hub.fetch_all_content('http://hub.com', only_failed=True)
+        self.assertEqual(mocked.call_count, 2)
+
+
 
 
 class HubQueueTests(TestCase):

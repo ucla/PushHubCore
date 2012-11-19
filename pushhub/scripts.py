@@ -73,3 +73,42 @@ def register_listener():
     print "Registered listener for %s" % listener_url
 
     env['closer']()
+
+
+def fetch_failed_topics():
+    description = """
+    Attempts to fetch content for all topics that have been marked as failed
+    previously. If the fetch fails during this run, it will not be retried
+    until the script is called again.
+
+    Arguments:
+        config_uri: the pyramid configuration to use for the hub
+        hub_url: the address of the hub that will be reported on topic fetch.
+
+    Example usage:
+        bin/fetch_failed_topics etc/paster.ini#pushhub myhub.com
+
+    """
+
+    usage = "%prog config_uri hub_url"
+    parser = optparse.OptionParser(
+        usage=usage,
+        description=textwrap.dedent(description)
+    )
+
+    options, args = parser.parse_args(sys.argv[1:])
+    if not len(args) >= 2:
+        print("You must provide a configuration file and a hub url")
+    config_uri = args[0]
+    hub_url = args[1]
+
+    request = Request.blank('/', base_url='http://localhost/hub')
+    env = bootstrap(config_uri, request=request)
+
+    hub = env['root']
+
+    hub.fetch_all_content(hub_url, only_failed=True)
+
+    transaction.commit()
+
+    env['closer']()
