@@ -488,7 +488,8 @@ class HubTests(TestCase):
         with patch('requests.get', new_callable=MockResponse, status_code=200):
             hub.publish('http://www.example.com/')
             hub.topics['http://www.example.com/'].content_type = 'atom'
-            hub.notify_listeners(hub.topics)
+            topics = [t for t in hub.topics.values()]
+            hub.notify_listeners(topics)
         l = hub.listeners.get('http://www.site.com/')
         self.assertTrue(l.topics.get('http://www.example.com/'))
 

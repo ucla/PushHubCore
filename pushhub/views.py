@@ -43,7 +43,9 @@ def publish(context, request):
                                   headers=[('Content-Type', 'text/plain')])
 
     hub.notify_subscribers()
-    hub.notify_listeners(hub.topics)
+
+    topics = [t for (k, t) in hub.topics.items() if k in topic_urls]
+    hub.notify_listeners(topics)
 
     return exception_response(204)
 
