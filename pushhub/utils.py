@@ -131,6 +131,8 @@ class FeedComparator(object):
             past_entry = self.past_feed.entries[idx]
             if entry.updated_parsed > past_entry.updated_parsed:
                 updated.append(entry)
+            if entry.link != past_entry.link:
+                updated.append(entry)
         return updated
 
     def removed_entries(self):

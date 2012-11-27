@@ -61,6 +61,14 @@ In December 2004 the Texas Attorney General obtained a temporary restraining ord
     <updated>2008-08-11T02:15:01Z</updated>
   </entry>
 
-
+  <entry >
+    <title>Felix</title>
+    <link href="http://publisher.example.com/happycat21.xml" />
+    <id>http://publisher.example.com/happycat25.xml</id>
+    <updated>2008-04-11T02:15:01Z</updated>
+    <summary>
+        A cat!
+    </summary>
+  </entry>
 </feed>
 

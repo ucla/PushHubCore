@@ -34,7 +34,7 @@ class TestFeedUpdated(BaseComparatorTestCase):
 
     def test_updated_entries_length(self):
         updated_entries = self.compare.updated_entries()
-        self.assertEqual(len(updated_entries), 1)
+        self.assertEqual(len(updated_entries), 2)
 
     def test_updated_entry_content(self):
         updated_entries = self.compare.updated_entries()
@@ -42,6 +42,13 @@ class TestFeedUpdated(BaseComparatorTestCase):
         self.assertEqual(entry['title'], 'Heathcliff')
         content = entry['content'][0]
         self.assertTrue('This entry was changed!' in content['value'])
+
+    def test_updated_link(self):
+        updated_entries = self.compare.updated_entries()
+        entry = updated_entries[1]
+        self.assertEqual(entry['title'], 'Felix')
+        self.assertEqual(entry['link'],
+                         'http://publisher.example.com/happycat21.xml')
 
 
 class TestFeedRemoved(BaseComparatorTestCase):

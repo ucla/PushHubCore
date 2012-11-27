@@ -133,7 +133,7 @@ class TopicTests(TestCase):
         t = Topic('http://httpbin.org/get')
         parsed = t.parse(good_atom)
         self.assertEqual(parsed['channel']['title'], 'Example Feed')
-        self.assertEqual(len(parsed['items']), 4)
+        self.assertEqual(len(parsed['items']), 5)
 
     @patch('requests.get')
     def test_failed_connection(self, mock):
@@ -220,7 +220,7 @@ class TopicNewEntriesTests(TestCase):
                 self.old_parsed
         )
         entries = new_feed['entries']
-        self.assertEqual(len(entries), 2)
+        self.assertEqual(len(entries), 3)
         self.assertEqual(entries[0].title, 'Colby Nolan')
         self.assertEqual(entries[1].title, 'Heathcliff')
 
