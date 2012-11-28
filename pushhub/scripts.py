@@ -34,8 +34,10 @@ def process_subscriber_notices():
     env = bootstrap(config_uri, request=request)
     queue = env['root'].notify_queue
 
-    notify_subscribers(queue)
+    results = notify_subscribers(queue)
+    print results
 
+    transaction.commit()
     env['closer']()
 
 
