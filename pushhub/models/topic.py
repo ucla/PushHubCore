@@ -72,7 +72,7 @@ class Topic(Persistent):
             response = requests.get(self.url, headers=headers)
             self.failed = False
         except ConnectionError:
-            logger.warning('Could not connect to topic URL %s', self.url)
+            logger.warning('Could not connect to topic URL %s' % self.url)
             self.failed = True
             return
 

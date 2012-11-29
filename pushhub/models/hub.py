@@ -55,6 +55,7 @@ class Hub(Folder):
             return
 
         for url, topic in self.topics.items():
+            logger.debug('Notify subscriber for topic: %s' % url)
             topic.notify_subscribers(self.notify_queue)
 
     def subscribe(self, callback_url, topic_url, verify_callbacks=True):
