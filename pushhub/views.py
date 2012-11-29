@@ -35,6 +35,15 @@ def publish(context, request):
             error_msg = "Malformed URL: %s" % topic_url
 
     if not bad_data:
+        topics = [
+            topic
+            for (url, topic) in hub.topics.items()
+            if url in topic_urls
+        ]
+        # XXX: Currently this is needed to ensure the listener gets
+        #      the latest data.
+        hub.fetch_content(topic_urls, request.application_url)
+        hub.notify_listeners(topics)
         hub.fetch_all_content(request.application_url)
 
     if bad_data and error_msg:
@@ -43,9 +52,6 @@ def publish(context, request):
                                   headers=[('Content-Type', 'text/plain')])
 
     hub.notify_subscribers()
-
-    topics = [t for (k, t) in hub.topics.items() if k in topic_urls]
-    hub.notify_listeners(topics)
 
     return exception_response(204)
 
