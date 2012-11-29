@@ -237,6 +237,7 @@ class Topic(Persistent):
                 'body': body,
                 'max_tries': 10
             })
+            logger.debug('Item placed on subscriber queue %s' % (url))
 
         # We've notified all of our subscribers,
         # so we can set the flag to not notify them again

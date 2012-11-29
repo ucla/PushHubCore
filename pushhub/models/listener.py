@@ -12,6 +12,10 @@ from zope.interface import Interface, implements
 from .topic import Topics
 from ..utils import is_valid_url
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class Listeners(Folder):
     """Folder to hold listeners"""
     title = "Listeners"
@@ -35,5 +39,6 @@ class Listener(Persistent):
 
     def notify(self, topic):
         headers, data = topic.get_request_data()
+        logger.debug('Notify listener: %s' % self.callback_url)
         response = requests.get(self.callback_url, data=data, headers=headers)
         return response

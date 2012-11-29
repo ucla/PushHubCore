@@ -166,5 +166,3 @@ def listen(context, request):
                                   body=error_msg,
                                   headers=[('Content-Type', 'text/plain')])
     return exception_response(200)
-
-

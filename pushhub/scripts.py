@@ -1,3 +1,4 @@
+import datetime
 import optparse
 import textwrap
 import transaction
@@ -35,7 +36,8 @@ def process_subscriber_notices():
     queue = env['root'].notify_queue
 
     results = notify_subscribers(queue)
-    print results
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print "%s %s %s" % (now,  __name__, results)
 
     transaction.commit()
     env['closer']()
