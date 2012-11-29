@@ -164,6 +164,11 @@ class Topic(Persistent):
         for entry in parsed_feed.entries:
             updated = datetime.fromtimestamp(mktime(entry['updated_parsed']))
 
+            try:
+                entry['title']
+            except KeyError:
+                continue
+
             new_feed.add_item(
                 entry.pop('title'),
                 entry.pop('link'),
