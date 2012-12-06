@@ -18,13 +18,13 @@ requires = [
     'requests',
     'feedparser',
     'WebHelpers',
-    'zc.queue',
+    'rq',
     ]
 
 setup(name='push-hub',
       version='0.15',
       description='push-hub',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -38,19 +38,17 @@ setup(name='push-hub',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      install_requires = requires,
-      tests_require= requires,
+      install_requires=requires,
+      tests_require=requires,
       extras_require={'test': ['mock']},
       test_suite="pushhub",
-      entry_points = """\
+      entry_points="""\
       [paste.app_factory]
       main = pushhub:main
       [console_scripts]
-      process_subscriber_notices = pushhub.scripts:process_subscriber_notices
       reg_listener = pushhub.scripts:register_listener
       fetch_all_topics = pushhub.scripts:fetch_all_topics
       show_subscribers = pushhub.scripts:show_subscribers
       show_topics = pushhub.scripts:show_topics
       """,
       )
-

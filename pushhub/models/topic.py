@@ -15,6 +15,8 @@ from requests.exceptions import ConnectionError
 from repoze.folder import Folder
 from zope.interface import Interface, implements
 from time import mktime
+from redis import Redis
+from rq import Queue
 
 from ..utils import FeedComparator
 from ..utils import Atom1FeedKwargs
@@ -111,7 +113,8 @@ class Topic(Persistent):
         return parsed
 
     def ping(self):
-        """Registers the last time a publisher pinged the hub for this topic."""
+        """Registers the last time a publisher pinged the hub for this topic.
+        """
         self.last_pinged = datetime.now()
 
     def add_subscriber(self, subscriber):
@@ -203,7 +206,7 @@ class Topic(Persistent):
 
         return (headers, body)
 
-    def notify_subscribers(self, queue):
+    def notify_subscribers(self):
         """
         Notify subscribers to this topic that the feed has been updated.
 
@@ -232,16 +235,13 @@ class Topic(Persistent):
                 'Invalid content type. Only Atom or RSS are supported'
             )
 
+        q = Queue(connection=Redis())
+
         headers = {'Content-Type': c_type}
         body = self.content
 
         for url, subscriber in self.subscribers.items():
-            queue.put({
-                'callback': url,
-                'headers': headers,
-                'body': body,
-                'max_tries': 10
-            })
+            q.enqueue('ucla.jobs.hub.post', url, body, headers)
             logger.debug('Item placed on subscriber queue %s' % (url))
 
         # We've notified all of our subscribers,

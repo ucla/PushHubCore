@@ -35,7 +35,6 @@ class Hub(Folder):
         super(Hub, self).__init__()
         self.topics = None
         self.subscribers = None
-        self.notify_queue = None
         self.listeners = Listeners()
 
     def publish(self, topic_url):
@@ -51,12 +50,12 @@ class Hub(Folder):
         Sends updates to each topic's subscribers to let them know
         of new content.
         """
-        if self.notify_queue is None or self.topics is None:
+        if self.topics is None:
             return
 
         for url, topic in self.topics.items():
             logger.debug('Notify subscriber for topic: %s' % url)
-            topic.notify_subscribers(self.notify_queue)
+            topic.notify_subscribers()
 
     def subscribe(self, callback_url, topic_url, verify_callbacks=True):
         """

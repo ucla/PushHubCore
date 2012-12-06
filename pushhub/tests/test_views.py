@@ -5,11 +5,8 @@ from paste.util.multidict import MultiDict
 from pyramid import testing
 from pyramid.request import Request
 
-from zc.queue import Queue
-
 from .mocks import MockResponse, MultiResponse, good_atom
 from ..models.hub import Hub
-from ..models.listener import Listeners
 from ..models.topic import Topic, Topics
 from ..models.subscriber import Subscriber
 from ..views import listen, publish, subscribe
@@ -20,7 +17,6 @@ class BaseTest(unittest.TestCase):
         self.config = testing.setUp()
         # Create an in-memory instance of the hub so requests can use it
         self.root = Hub()
-        self.root.notify_queue = Queue()
 
     def tearDown(self):
         testing.tearDown()
@@ -124,28 +120,27 @@ class PublishTests(BaseTest):
         #self.assertTrue('John Doe' in first.content)
         #self.assertTrue('John Doe' in second.content)
 
-    def test_callback_requests_queued(self, mock):
-        """
-        Ensure that publishing an update enqueues callback requests.
+    # XXX: Need to change this to use the new queue system
+    #def test_callback_requests_queued(self, mock):
+    #    """
+    #    Ensure that publishing an update enqueues callback requests.
 
-        Definitely an integration test, not a unit.
-        """
-        t = Topic('http://www.example.com/')
-        t.changed = True
-        t.content_type = 'atom'
-        s = Subscriber('http://www.site.com/')
-        t.add_subscriber(s)
-        self.root.topics = Topics()
-        self.root.topics.add(t.url, t)
-
-        data = MultiDict({'hub.mode': 'publish'})
-        data.add('hub.url', 'http://example.com/')
-        request = self.r('/publish', self.valid_headers, POST=data)
-        q = self.root.notify_queue
-        publish(None, request)
-
-        self.assertEqual(len(q), 1)
-        self.assertEqual(q[0]['callback'], 'http://www.site.com/')
+    #    Definitely an integration test, not a unit.
+    #    """
+    #    t = Topic('http://www.example.com/')
+    #    t.changed = True
+    #    t.content_type = 'atom'
+    #    s = Subscriber('http://www.site.com/')
+    #    t.add_subscriber(s)
+    #    self.root.topics = Topics()
+    #    self.root.topics.add(t.url, t)
+    #    data = MultiDict({'hub.mode': 'publish'})
+    #    data.add('hub.url', 'http://example.com/')
+    #    request = self.r('/publish', self.valid_headers, POST=data)
+    #    q = self.root.notify_queue
+    #    publish(None, request)
+    #    self.assertEqual(len(q), 1)
+    #    self.assertEqual(q[0]['callback'], 'http://www.site.com/')
 
 
 class SubscribeTests(BaseTest):
@@ -325,13 +320,13 @@ class SubscribeTests(BaseTest):
             )
         }
         with patch('requests.get', new_callable=MultiResponse, mapping=urls):
-            info = subscribe(None, request)
+            subscribe(None, request)
 
         hub = self.root
         topic = hub.topics.get('http://www.google.com/')
         subscriber = hub.subscribers.get('http://httpbin.org/get')
-
-        self.assertEqual(topic, subscriber.topics.get('http://www.google.com/'))
+        self.assertEqual(
+            topic, subscriber.topics.get('http://www.google.com/'))
 
 
 @patch('requests.get', new_callable=MockResponse, content=good_atom)
@@ -384,5 +379,3 @@ class ListenTests(BaseTest):
         self.assertEqual(response.status_code, 400)
         l = self.root.listeners.get('http://www.example', None)
         self.assertEqual(l, None)
-
-
