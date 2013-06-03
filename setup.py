@@ -51,9 +51,9 @@ requires = [
     'rq',
     ]
 
-setup(name='push-hub',
+setup(name='PushHubCore',
       version='0.16',
-      description='push-hub',
+      description='PushHubCore',
       long_description=README + '\n\n' + CHANGES,
       license='LICENSE.txt',
       classifiers=[
