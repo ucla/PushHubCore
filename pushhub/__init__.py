@@ -34,6 +34,12 @@ from pyramid_zodbconn import get_connection
 from .models import appmaker
 from .views import listen, publish, subscribe
 
+# for some reason feedparser put this at the end and one of the
+# other parsers catches our dates and doesn't consider DST
+import feedparser
+# re-registering this should put it at the front
+feedparser.registerDateHandler(feedparser._parse_date_iso8601)
+
 
 def root_factory(request):
     conn = get_connection(request)

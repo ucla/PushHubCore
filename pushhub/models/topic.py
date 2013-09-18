@@ -167,6 +167,8 @@ class Topic(Persistent):
         compare = FeedComparator(parsed, parsed_old)
         new_entries = compare.new_entries()
         updated_entries = compare.updated_entries()
+        logger.debug('%s new entries, %s updated entries in %s'
+                     % (len(new_entries), len(updated_entries), self.url))
         metadata = compare.changed_metadata()
 
         if new_entries or updated_entries or metadata:
