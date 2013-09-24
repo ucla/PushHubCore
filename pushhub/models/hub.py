@@ -75,16 +75,16 @@ class Hub(Folder):
         topic.ping()
         logger.info('Published topic with URL %s' % topic_url)
 
-    def notify_subscribers(self):
+    def notify_subscribers(self, topics):
         """
         Sends updates to each topic's subscribers to let them know
         of new content.
         """
-        if self.topics is None:
+        if topics is None:
             return
 
-        for url, topic in self.topics.items():
-            logger.debug('Notify subscriber for topic: %s' % url)
+        for topic in topics:
+            logger.debug('Notify subscriber for topic: %s' % topic.url)
             topic.notify_subscribers()
 
     def subscribe(self, callback_url, topic_url, verify_callbacks=True):

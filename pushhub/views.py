@@ -81,7 +81,7 @@ def publish(context, request):
                                   body=error_msg,
                                   headers=[('Content-Type', 'text/plain')])
 
-    hub.notify_subscribers()
+    hub.notify_subscribers(topics)
 
     return exception_response(204)
 
