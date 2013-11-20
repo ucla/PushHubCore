@@ -243,9 +243,10 @@ class Atom1FeedKwargs(Atom1Feed):
         if isinstance(value, dict):
             # Handle a dictionary and assume the "value" is what
             # will be the text of the element.
+            value = deepcopy(value)
             el_content = value.pop('value', '')
             # The xml parser can't handle a None value
-            for k, v in deepcopy(value).items():
+            for k, v in value.items():
                 if v is None:
                     value.pop(k)
             handler.addQuickElement(key, el_content, value)
