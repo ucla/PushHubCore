@@ -52,7 +52,7 @@ requires = [
     ]
 
 setup(name='PushHubCore',
-      version='0.17',
+      version='0.18',
       description='PushHubCore',
       long_description=README + '\n\n' + CHANGES,
       license='LICENSE.txt',
