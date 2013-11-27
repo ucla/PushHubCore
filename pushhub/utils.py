@@ -243,12 +243,16 @@ class Atom1FeedKwargs(Atom1Feed):
         if isinstance(value, dict):
             # Handle a dictionary and assume the "value" is what
             # will be the text of the element.
+            value = deepcopy(value)
             el_content = value.pop('value', '')
             # The xml parser can't handle a None value
-            for k, v in deepcopy(value).items():
+            for k, v in value.items():
                 if v is None:
                     value.pop(k)
-            handler.addQuickElement(key, el_content, value)
+            if value.get("type") == "application/xhtml+xml": # XXX: fragile
+                self.add_xml_element(handler, key, el_content, value)
+            else:
+                handler.addQuickElement(key, el_content, value)
         elif isinstance(value, (list, tuple)):
             # Loop over a list and add each item
             for item in value:
@@ -264,3 +268,12 @@ class Atom1FeedKwargs(Atom1Feed):
         super(Atom1FeedKwargs, self).add_item_elements(handler, item)
         for k, v in item.items():
             self._handle_kwarg(handler, k, v)
+
+    def add_xml_element(self, handler, name, value, attrs):
+        """Add element with XML content"""
+        if attrs is None:
+            attrs = {}
+        handler.startElement(name, attrs)
+        if value is not None:
+            handler._write(value) # XXX: private access
+        handler.endElement(name)
